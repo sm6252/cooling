@@ -1,0 +1,2097 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>절연유체 파워모듈 냉각안 비교기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* 레이아웃: 좌측 입력 패널 + 우측 PDF 수행항목 순서 탭. 엔지니어링 계산서 톤 */
+:root{
+  --bg:#f4f6f8; --panel:#ffffff; --ink:#15202b; --muted:#5b6876; --line:#d9e0e7; --accent:#0b6e8a;
+  --accent-soft:#e3f1f5; --warn:#a15c00; --warn-soft:#fff3df; --bad:#b42318; --good:#137a3f; --good-soft:#e5f5ec;
+  --cA:#2563eb; --cB:#d97706; --cC:#059669; --cD:#be185d; --cR:#7b8794;
+  --heat:#d9480f; --cool:#1c7ed6; --hot:#f08c00;
+  --f-body:"IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1418; --panel:#171e24; --ink:#e4eaf0; --muted:#97a4b2; --line:#2a343e; --accent:#4fb3cf;
+    --accent-soft:#16303a; --warn:#f0b35a; --warn-soft:#33270f; --bad:#ff8a80; --good:#5fd08f; --good-soft:#13301f;
+    --cA:#6c9cff; --cB:#f2a541; --cC:#34c99a; --cD:#f06aa8; --cR:#9aa5b1; --heat:#ff7a45; --cool:#5aa9ff; --hot:#ffb347;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1418; --panel:#171e24; --ink:#e4eaf0; --muted:#97a4b2; --line:#2a343e; --accent:#4fb3cf;
+  --accent-soft:#16303a; --warn:#f0b35a; --warn-soft:#33270f; --bad:#ff8a80; --good:#5fd08f; --good-soft:#13301f;
+  --cA:#6c9cff; --cB:#f2a541; --cC:#34c99a; --cD:#f06aa8; --cR:#9aa5b1; --heat:#ff7a45; --cool:#5aa9ff; --hot:#ffb347;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.55 var(--f-body)}
+h1,h2,h3{text-wrap:balance;margin:0}
+h1{font-size:20px;font-weight:700;letter-spacing:-.01em}
+h2{font-size:16px;font-weight:700;margin-bottom:8px}
+h3{font-size:14px;font-weight:600;margin-bottom:6px}
+p{margin:0 0 8px;max-width:75ch}
+.num,td.n,.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+header.top{padding:16px 20px 12px;border-bottom:1px solid var(--line);background:var(--panel);display:flex;flex-wrap:wrap;gap:8px 24px;align-items:flex-end;justify-content:space-between}
+header.top .sub{color:var(--muted);font-size:13px}
+.summary{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--line);border-radius:999px;font-size:12px;background:var(--bg);white-space:nowrap}
+.chip b{font-weight:600}
+.wrap{display:grid;grid-template-columns:330px 1fr;min-height:calc(100% - 80px)}
+aside{border-right:1px solid var(--line);background:var(--panel);padding:12px 14px 40px;overflow-y:auto;max-height:calc(100vh - 0px);position:sticky;top:0}
+main{padding:14px 20px 60px;min-width:0}
+details.grp{border-bottom:1px solid var(--line);padding:8px 0}
+details.grp>summary{cursor:pointer;font-weight:600;font-size:13px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+details.grp>summary::after{content:"＋";color:var(--muted)}
+details.grp[open]>summary::after{content:"－"}
+details.grp>summary .tag{font-weight:500;color:var(--muted);font-size:11px;margin-left:6px}
+.fld{display:grid;grid-template-columns:1fr 92px;gap:6px;align-items:center;margin:6px 0}
+.fld label{font-size:12.5px;color:var(--ink)}
+.fld label small{color:var(--muted);font-size:11px}
+input,select{font:13px var(--f-mono);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:4px 6px;width:100%}
+select{font-family:var(--f-body)}
+input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visible,.tab:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.fld.wide{grid-template-columns:1fr}
+.fld.fsel{grid-template-columns:1fr 150px}
+.expl b.num{display:inline}
+.modes{display:grid;gap:4px;margin:6px 0}
+.modes label{display:flex;gap:6px;align-items:center;font-size:12.5px;cursor:pointer}
+.modes input{width:auto}
+.note{font-size:11.5px;color:var(--muted);margin:4px 0}
+.tabs{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--line);margin-bottom:14px;position:sticky;top:0;background:var(--bg);padding-top:4px;z-index:2}
+.tab{border:1px solid transparent;border-bottom:none;background:none;color:var(--muted);font:600 13px var(--f-body);padding:7px 11px;border-radius:8px 8px 0 0;cursor:pointer}
+.tab .k{font-family:var(--f-mono);font-weight:500;margin-right:4px;opacity:.75}
+.tab[aria-selected="true"]{background:var(--panel);color:var(--ink);border-color:var(--line);margin-bottom:-1px}
+.view{display:none}
+.view.on{display:block}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:14px}
+.req{font-size:12px;color:var(--muted);border-left:3px solid var(--accent);padding:2px 0 2px 10px;margin-bottom:12px;max-width:none}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.tblwrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{border-bottom:1px solid var(--line);padding:5px 7px;text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:11.5px;background:var(--bg);position:sticky;top:0}
+td.n,th.n{text-align:right;white-space:nowrap}
+tr.best td{background:var(--good-soft)}
+tr.grp td{background:var(--bg);font-weight:600;color:var(--muted);font-size:11.5px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.pill{display:inline-block;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:600}
+.pill.ok{background:var(--good-soft);color:var(--good)}
+.pill.w{background:var(--warn-soft);color:var(--warn)}
+.pill.b{background:var(--warn-soft);color:var(--bad)}
+.warnlist{margin:4px 0 0;padding-left:18px;font-size:12px;color:var(--warn)}
+.expl{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.expl div{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--bg);font-size:12.5px}
+.expl b{display:block;margin-bottom:2px}
+svg text{font-family:var(--f-body)}
+svg .mono{font-family:var(--f-mono)}
+.btn{font:600 12.5px var(--f-body);border:1px solid var(--accent);color:var(--accent);background:var(--panel);border-radius:6px;padding:5px 12px;cursor:pointer}
+.btn:hover{background:var(--accent-soft)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.row label{font-size:12.5px;display:flex;gap:6px;align-items:center}
+.row select,.row input{width:auto}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;margin:6px 0}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.winner{border:2px solid var(--good);background:var(--good-soft)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:12.5px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0}
+ul.tight{margin:4px 0;padding-left:18px}
+ul.tight li{margin:2px 0}
+.stps{display:flex;flex-wrap:wrap;gap:8px 22px;margin:6px 0 14px;counter-reset:s}
+.stp{flex:1 1 150px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--bg);position:relative;display:grid;gap:4px}
+.stp:not(:last-child)::after{content:"→";position:absolute;right:-11px;top:50%;transform:translate(50%,-50%);color:var(--muted);font-weight:700}
+.stp-n{font:600 11px var(--f-mono);color:var(--accent)}
+.stp-t{font-weight:600;font-size:13px}
+#v-adev .card .card{background:var(--bg)}
+.adpicks{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 12px}
+.adpick{font:500 13px var(--f-body);border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:8px 14px;cursor:pointer}
+.adpick[aria-pressed="true"]{border:2px solid var(--accent);background:var(--accent-soft);padding:7px 13px}
+.adpick b{font-family:var(--f-mono);margin-right:4px}
+#v-adev>.card{scroll-margin-top:52px}
+@media (max-width:860px){
+  .wrap{grid-template-columns:1fr}
+  aside{position:static;max-height:none;border-right:none;border-bottom:1px solid var(--line)}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1>절연유체 직접냉각 파워모듈 · 냉각안 비교기</h1>
+    <div class="sub">열시스템 디자인 학기말 프로젝트 1단계 예비설계 · 후보 냉각안 A·B·C를 NREL SiC 모듈 논문 조건(5×5 mm SiC, AmpCool 110, 70 °C)에서 비교하고 논문 값으로 검증</div>
+  </div>
+  <div class="summary" id="summary"></div>
+</header>
+<div class="wrap">
+  <aside id="inputs"></aside>
+  <main>
+    <nav class="tabs" role="tablist" id="tabs"></nav>
+    <section class="view" id="v-adev"></section>
+    <section class="view" id="v-pdf"></section>
+    <section class="view" id="v-paper"></section>
+    <section class="view" id="v-verify"></section>
+    <section class="view" id="v-path"></section>
+    <section class="view" id="v-fluid"></section>
+    <section class="view" id="v-geo"></section>
+    <section class="view" id="v-cmp"></section>
+    <section class="view" id="v-score"></section>
+    <section class="view" id="v-sel"></section>
+    <section class="view" id="v-sweep"></section>
+    <section class="view" id="v-notes"></section>
+  </main>
+</div>
+<script>
+// ===== 열·유동 계산 엔진 (DOM 없음) =====
+const TC = (function () {
+  const R_U = 8.314;
+  const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+
+  // ---------- 단상 절연유체 ----------
+  // ν(T): Andrade 식 ln ν = A + B/T 를 40/100 °C 동점도 두 점으로 맞춤
+  const FLUIDS = {
+    amp110: { compatS: 5, dataS: 5,
+      name: 'AmpCool AC-110', full: 'AmpCool AC-110 (Engineered Fluids) · NREL 실험 유체(기준)', maker: 'Engineered Fluids',
+      rhoRef: [15.6, 820], beta: 7.0e-4, nuPts: [[40, 8.11], [100, 2.22]], cpPts: [[40, 2212.1], [100, 2439.0]], kPts: [[40, 0.1359], [100, 0.1325]],
+      diel: 5, dielTxt: '>60 kV(2 mm), >1e14 Ω·cm', flash: '193 °C', flashC: 193, cost: 0,
+      compat: 'EV 배터리·전동기·인버터 냉각용', src: 'Engineered Fluids AC-1XX TDS (2026)', url: 'https://www.engineeredfluids.com/wp-content/uploads/2026/05/AmpCool-AC-1XX-ENG-Technical-Data-Sheet-AC-1XX-ENG-TDS-20260505-1.pdf'
+    },
+    amp122: { compatS: 4, dataS: 4,
+      name: 'AmpCool AC-122', full: 'AmpCool AC-122 (Engineered Fluids, 최저점도 등급)', maker: 'Engineered Fluids',
+      rhoRef: [15.6, 790], beta: 7.0e-4, nuPts: [[40, 5.02], [100, 1.70]], cpPts: [[40, 2212.1], [100, 2439.0]], kPts: [[40, 0.1359], [100, 0.1325]],
+      diel: 5, dielTxt: '>60 kV(2 mm, 시리즈 공통값)', flash: '163 °C', flashC: 163, cost: 0,
+      compat: 'AC-110과 같은 계열', src: 'Engineered Fluids AC-1XX TDS (2026). 비열은 표기 오류(×1000)를 보정해 사용', url: 'https://www.engineeredfluids.com/wp-content/uploads/2026/05/AmpCool-AC-1XX-ENG-Technical-Data-Sheet-AC-1XX-ENG-TDS-20260505-1.pdf'
+    },
+    amp120: { compatS: 5, dataS: 5,
+      name: 'AmpCool AC-120', full: 'AmpCool AC-120 (Engineered Fluids, 고점도·고인화점 등급)', maker: 'Engineered Fluids',
+      rhoRef: [15.6, 820], beta: 7.0e-4, nuPts: [[40, 16.0], [100, 3.60]], cpPts: [[40, 2206.0], [100, 2428.8]], kPts: [[40, 0.1459], [100, 0.1430]],
+      diel: 5, dielTxt: '>60 kV(2 mm)', flash: '228 °C', flashC: 228, cost: 0,
+      compat: 'AC-110과 같은 계열', src: 'Engineered Fluids AC-1XX TDS (2026)', url: 'https://www.engineeredfluids.com/wp-content/uploads/2026/05/AmpCool-AC-1XX-ENG-Technical-Data-Sheet-AC-1XX-ENG-TDS-20260505-1.pdf'
+    },
+    valde1: { compatS: 3, dataS: 5,
+      name: 'Valvoline DE 1', full: 'Valvoline Dielectric Heat Transfer Fluid DE 1 (탄화수소계)', maker: 'Valvoline',
+      rhoRef: [40, 811.5], beta: (811.5 - 773.4) / 811.5 / 60, nuPts: [[40, 8.01], [100, 2.40]], cpPts: [[40, 2001.1], [100, 2222.2]], kPts: [[40, 0.1304], [100, 0.1196]],
+      diel: 5, dielTxt: '전기전도도 0.81 pS/m (20 °C)', flash: '데이터시트 확인 필요', flashC: null, cost: 0,
+      compat: '데이터센터 액침용', src: 'Valvoline DE 1 PDS (40·100 °C 물성 전부 제시)', url: 'https://www.valvolineglobal.com/490536/globalassets/vcom/product%20detail%20pages/high-performance-computing/hpc-immersion-heat-transfer-fluid-de1.pdf'
+    },
+    castrol: { compatS: 4, dataS: 3,
+      name: 'Castrol ON EV Thermal BOT 2100', full: 'Castrol ON EV Thermal Fluid BOT 2100 (EV 직접냉각 전용)', maker: 'Castrol',
+      rhoRef: [15.6, 797], beta: 7.0e-4, nuPts: [[40, 5.12], [100, 1.71]], cp25: 2030 * (1 + 0.0018 * 5), cpT: 0.0018, k25: 0.139 * (1 - 0.0007 * 5), kT: -0.0007,
+      diel: 5, dielTxt: '전기전도도 <35 pS/m', flash: '159 °C', flashC: 159, cost: 0,
+      compat: 'EV 배터리 직접냉각용', src: 'Castrol PDS: ρ15.6 797, KV40 5.12·KV100 1.71, c_p 2.03(20 °C), k 0.139(20 °C). c_p·k 온도기울기는 탄화수소 일반값 가정', url: 'https://www.kernow-oils.co.uk/products/on-ev-thermal-fluid-bot-2100/'
+    },
+    fuchs: { compatS: 3, dataS: 3,
+      name: 'FUCHS 액침유 (저점도 등급)', full: 'FUCHS 단상 액침 냉각유 저점도 등급 (KV40 5.1)', maker: 'FUCHS',
+      rhoRef: [25, 792], beta: 7.0e-4, nuPts: [[40, 5.1], [100, 1.8]], cp25: 2035, cpT: 0.0018, k25: 0.138, kT: -0.0007,
+      diel: 4, dielTxt: '20 kV/mm, >2e11 Ω·cm', flash: '데이터시트 확인 필요', flashC: null, cost: 0,
+      compat: '데이터센터 액침용', src: 'FUCHS 단상 액침유 물성표(25 °C 값). 온도기울기는 일반값 가정', url: 'https://www.fuchs.com/us/en/single-phase-immersion-cooling-fluids/'
+    },
+    hxl9119: { compatS: 4, dataS: 3,
+      name: 'LANXESS Reotherm HXL-9119', full: 'LANXESS Reotherm HXL-9119 (EV 배터리 액침용)', maker: 'LANXESS',
+      rhoRef: [20, 830], beta: 7.0e-4, nuPts: [[40, 4.7], [100, 1.4]], cp25: 2240 * (1 + 0.0018 * 5), cpT: 0.0018, k25: 0.138 * (1 - 0.0007 * 5), kT: -0.0007,
+      diel: 5, dielTxt: '52 kV, 3860 GΩ·m', flash: '161 °C', flashC: 161, cost: 0,
+      compat: 'EV 배터리 액침용', src: 'LANXESS Reotherm 물성표(20 °C c_p·k, 개략값). 온도기울기는 일반값 가정', url: 'https://lanxess.com/en/products/brands/reotherm'
+    },
+    e565: { compatS: 3, dataS: 3,
+      name: 'LANXESS Reotherm E-565', full: 'LANXESS Reotherm E-565 (인산에스터, 난연)', maker: 'LANXESS',
+      rhoRef: [20, 918], beta: 7.5e-4, nuPts: [[40, 8.0], [100, 2.0]], cp25: 1948 * (1 + 0.0018 * 5), cpT: 0.0018, k25: 0.133 * (1 - 0.0006 * 5), kT: -0.0006,
+      diel: 4, dielTxt: '228 kV, 수분 <2000 ppm(흡습성)', flash: '190 °C', flashC: 190, cost: -0.5,
+      compat: '인산에스터: 엘라스토머 적합성 확인 필요', src: 'LANXESS Reotherm 물성표(개략값)', url: 'https://lanxess.com/en/products/brands/reotherm'
+    },
+    repsol: { compatS: 4, dataS: 2,
+      name: 'Repsol EV-Fluids Battery', full: 'Repsol EV-Fluids Battery Thermal Fluid (생분해성, 고인화점)', maker: 'Repsol',
+      rhoRef: [20, 969], beta: 7.5e-4, nuPts: [[-20, 1196], [40, 27.4]], cp25: 1997, cpT: 0.0018, k25: 0.148, kT: -0.0006,
+      diel: 5, dielTxt: '77 kV', flash: '255 °C', flashC: 255, cost: 0,
+      compat: '배터리 액침용', src: 'Repsol RP_3080Z(2022): ρ20 0.969, KV40 27.4·KV-20 1196, c_p 1997, k 0.148. 70 °C 점도는 외삽', url: 'https://lubricants.repsol.com/content/dam/repsol-corporate/en_gb/productos-y-servicios/lubricantes-documentos/ev-fluids-battery-thermal-fluid-en.pdf'
+    },
+    pao2: { flashC: 155, compatS: 4, dataS: 3,
+      name: 'PAO 2 cSt', full: 'PAO 2 cSt (폴리알파올레핀, Group IV 합성 탄화수소)',
+      rho25: 792, beta: 7.0e-4, cp25: 2150, cpT: 0.0018, k25: 0.145, kT: -0.0007, nu40: 5.0, nu100: 1.7,
+      diel: 5, dielTxt: '우수 · 비극성, 수분 배척, 가수분해 없음', flash: '약 155 °C', cost: 0,
+      compat: 'EPDM 팽윤 주의, FKM·HNBR 양호. 셀·권선 피복과 적합성 양호(시험 필요)',
+      src: '대표값: 시판 PAO 2 cSt 기유 사양(KV40≈5.0, KV100≈1.7 cSt, ρ15≈0.80). k·cp는 PAO 일반값.'
+    },
+    ester: { flashC: 170, compatS: 3, dataS: 3,
+      name: '합성 에스터', full: '합성 에스터 (저점도 Group V, LANXESS Reotherm 계열 근사)',
+      rho25: 915, beta: 7.5e-4, cp25: 1948, cpT: 0.0018, k25: 0.133, kT: -0.0006, nu40: 8.0, nu100: 2.0,
+      diel: 4, dielTxt: '양호 · 극성이라 수분 흡수 시 절연 저하 → 탈수·밀봉 관리 필요', flash: '약 170 °C 이상', cost: -0.5,
+      compat: '일부 엘라스토머 팽윤(FKM 검증 필요), 생분해성 우수, 산화 안정성 양호',
+      src: 'LANXESS Reotherm 공개 물성(k 0.133 W/m·K, cp 1948 J/kg·K, KV40 8.0, KV100 2.0 cSt). 밀도는 에스터 일반값(가정).'
+    },
+    evlow: { flashC: 100, compatS: 4, dataS: 2,
+      name: '초저점도 EV 열관리유', full: '초저점도 EV 열관리유 (Lubrizol EVOGEN TM1000 중간 등급 근사)',
+      rho25: 780, beta: 7.5e-4, cp25: 2120, cpT: 0.0018, k25: 0.121, kT: -0.0007, nu40: 2.0, nu100: 0.9,
+      diel: 5, dielTxt: '우수 · 탄화수소계', flash: '약 100 °C (낮음 → 화재안전 검토)', cost: -0.5,
+      compat: '탄화수소계 일반 적합성. 낮은 인화점 주의',
+      src: 'Lubrizol 공개 물성(ρ 0.78, cp 2.12 kJ/kg·K, k 0.121, KV100 0.9 cSt). KV40=2.0 cSt는 가정.'
+    },
+    hfe: { flashC: 999, nonflam: true, compatS: 4, dataS: 3,
+      name: 'HFE (Novec 7500 근사)', full: '하이드로플루오로에테르 (3M Novec 7500 근사, 단종)',
+      rho25: 1614, beta: 1.36e-3, cp25: 1128, cpT: 0.0016, k25: 0.065, kT: -0.003, nu40: 0.62, nu100: 0.36,
+      diel: 5, dielTxt: '우수 · 불연성', flash: '없음', cost: -2,
+      compat: '재료 적합성 넓음. PFAS 규제·단종으로 공급 위험',
+      src: '3M Novec 7500 사양(ρ 1614, cp 1128, k 0.065, ν25 0.77 cSt). 40/100 °C 점도는 외삽 추정.'
+    },
+    wg50: { flashC: 999, nonflam: true, compatS: 1, dataS: 4,
+      name: '물-EG 50% (기준선)', full: '물-에틸렌글리콜 50% (비절연 · 기존 간접냉각 기준선)',
+      rho25: 1065, beta: 5.0e-4, cp25: 3280, cpT: 0.0012, k25: 0.37, kT: 0.0012, nu40: 2.08, nu100: 0.73,
+      diel: 1, dielTxt: '불가 · 전도성 → 직접 접촉 냉각 불가', flash: '없음(수용액)', cost: 1,
+      compat: '직접 냉각 불가. 비교 기준선 전용',
+      src: 'EG 50 vol% 수용액 일반값(μ40≈2.2 mPa·s, μ100≈0.75 mPa·s).'
+    },
+    custom: { compatS: 3, dataS: 3,
+      name: '사용자 정의', full: '사용자 정의 유체 (데이터시트 값 입력)',
+      rho25: 800, beta: 7.0e-4, cp25: 2100, cpT: 0.0018, k25: 0.14, kT: -0.0007, nu40: 4.0, nu100: 1.5,
+      diel: 4, dielTxt: '사용자 입력', flash: '-', cost: 0, compat: '-', src: '사용자 입력값'
+    }
+  };
+
+  function props1p(f, T) {
+    // 점도: Andrade ln ν = A + B/T, 데이터시트 두 점(기본 40·100 °C)으로 맞춤
+    const [p1, p2] = f.nuPts || [[40, f.nu40], [100, f.nu100]];
+    const T1 = p1[0] + 273.15, T2 = p2[0] + 273.15, TK = T + 273.15;
+    const B = Math.log(p1[1] / p2[1]) / (1 / T1 - 1 / T2);
+    const A = Math.log(p1[1]) - B / T1;
+    const nu = Math.exp(A + B / TK) * 1e-6;
+    const [rT, rV] = f.rhoRef || [25, f.rho25];
+    const rho = rV * (1 - f.beta * (T - rT));
+    const lin = (pts, ref, slope) => pts ? pts[0][1] + (pts[1][1] - pts[0][1]) * (T - pts[0][0]) / (pts[1][0] - pts[0][0]) : ref * (1 + slope * (T - 25));
+    const cp = lin(f.cpPts, f.cp25, f.cpT);
+    const k = lin(f.kPts, f.k25, f.kT);
+    const mu = nu * rho;
+    return { T, rho, cp, k, nu, mu, Pr: mu * cp / k };
+  }
+
+  // ---------- 2상 절연유체 ----------
+  // Psat: Clausius-Clapeyron (정상비점 기준). 액·증기 물성은 40~60 °C 대표값(상수)
+  const TPFLUIDS = {
+    r1233: {
+      name: 'R1233zd(E)', full: 'R1233zd(E) (HFO 계열 저압 유체, 비점 18.3 °C)',
+      M: 0.1305, Tnb: 18.3, Pc: 3.62e6, hfg: 185e3, rhoL: 1230, cpL: 1260, kL: 0.078, muL: 0.37e-3, muV: 1.1e-5, sigma: 0.0128,
+      diel: 4, dielTxt: '양호 · 냉매급 절연성', cost: -1, gwp: 'GWP≈1',
+      compat: '일부 엘라스토머 팽윤, 운전압력 > 대기압',
+      src: 'NIST REFPROP 일반값(40 °C 부근) 근사. Psat은 Clausius-Clapeyron 근사.'
+    },
+    fk649: {
+      name: 'FK-5-1-12', full: 'FK-5-1-12 (3M Novec 649 계열 플루오로케톤, 비점 49 °C)',
+      M: 0.316, Tnb: 49.0, Pc: 1.865e6, hfg: 88e3, rhoL: 1580, cpL: 1103, kL: 0.059, muL: 0.48e-3, muV: 1.1e-5, sigma: 0.0105,
+      diel: 5, dielTxt: '우수 · 불연성', cost: -2, gwp: 'GWP≈1 (단, PFAS 규제 대상)',
+      compat: '재료 적합성 넓음. 3M 단종 → 대체 공급원 확인 필요',
+      src: '3M Novec 649 사양(비점 49 °C, hfg 88 kJ/kg, ρ 1600, k 0.059) 근사.'
+    },
+    hfe7100: {
+      name: 'HFE-7100', full: 'HFE-7100 (비점 61 °C, 단종 · 참고용)',
+      M: 0.250, Tnb: 61.0, Pc: 2.23e6, hfg: 112e3, rhoL: 1420, cpL: 1180, kL: 0.062, muL: 0.40e-3, muV: 1.0e-5, sigma: 0.0110,
+      diel: 5, dielTxt: '우수 · 불연성', cost: -2, gwp: 'GWP≈300',
+      compat: '재료 적합성 넓음. 단종',
+      src: '3M Novec 7100 사양 근사.'
+    }
+  };
+  function psat(f, T) { return 101325 * Math.exp(f.hfg * f.M / R_U * (1 / (f.Tnb + 273.15) - 1 / (T + 273.15))); }
+  function tsat(f, P) { return 1 / (1 / (f.Tnb + 273.15) - Math.log(P / 101325) * R_U / (f.hfg * f.M)) - 273.15; }
+  function rhoV(f, T) { return psat(f, T) * f.M / (R_U * (T + 273.15)); }
+
+  // ---------- 재료 ----------
+  const MAT = { Cu: { name: '구리', k: 390 }, Al: { name: '알루미늄', k: 200 }, AlSiC: { name: 'AlSiC', k: 180 } };
+
+  // ---------- 패키지 열저항 (45° 확산 근사) + 냉각기판 확산저항 (Lee-Song-Au-Moran 1995) ----------
+  function packageR(p) {
+    let Lx = p.chipL, Wy = p.chipW;
+    const out = [];
+    for (const ly of p.layers) {
+      const Atop = Lx * Wy;
+      const Lb = Math.min(Lx + 2 * ly.t, p.L), Wb = Math.min(Wy + 2 * ly.t, p.W);
+      const Abot = Lb * Wb;
+      out.push({ name: ly.name, R: ly.t / (ly.k * Math.sqrt(Atop * Abot)), t: ly.t, k: ly.k });
+      Lx = Lb; Wy = Wb;
+    }
+    return { layers: out, Asrc: Lx * Wy, Rpkg: out.reduce((s, x) => s + x.R, 0) };
+  }
+  function baseR(p, Asrc, heff) {
+    const A = p.L * p.W, k = p.kBase, t = p.tBase;
+    const a = Math.sqrt(Asrc / Math.PI), b = Math.sqrt(A / Math.PI);
+    const eps = Math.min(a / b, 0.999), tau = t / b, Bi = heff * b / k;
+    const lam = Math.PI + 1 / (Math.sqrt(Math.PI) * eps);
+    const th = Math.tanh(lam * tau);
+    const Phi = (th + lam / Bi) / (1 + (lam / Bi) * th);
+    const Rsp = (1 - eps) * Phi / (Math.PI * k * a);
+    return { R1D: t / (k * A), Rsp, Rconv: 1 / (heff * A), Bi };
+  }
+
+  // ---------- 상관식 ----------
+  function zukauskas(Re, Pr, stag, a, b, NL, Prs) {
+    let Nu;
+    if (!stag) {
+      if (Re < 100) Nu = 0.9 * Math.pow(Re, 0.4);
+      else if (Re < 1000) Nu = 0.52 * Math.pow(Re, 0.5);
+      else Nu = 0.27 * Math.pow(Re, 0.63);
+    } else {
+      if (Re < 500) Nu = 1.04 * Math.pow(Re, 0.4);
+      else if (Re < 1000) Nu = 0.71 * Math.pow(Re, 0.5);
+      else Nu = 0.35 * Math.pow(a / b, 0.2) * Math.pow(Re, 0.6);
+    }
+    Nu *= Math.pow(Pr, 0.36) * Math.pow(Pr / (Prs || Pr), 0.25); // Zukauskas 원식의 벽면 Pr 보정
+    // 행 수 보정 C₂ (Zukauskas, Çengel Table 7-3): [N_L, 엇갈림 Re>1000, 정렬 Re>1000, 엇갈림 Re<1000]. N_L ≥ 16이면 1
+    const tbl = [[1, 0.64, 0.70, 0.83], [2, 0.76, 0.80, 0.87], [3, 0.84, 0.86, 0.91], [4, 0.89, 0.90, 0.94], [5, 0.93, 0.93, 0.95], [7, 0.95, 0.95, 0.97], [10, 0.97, 0.97, 0.98], [13, 0.98, 0.98, 0.99], [16, 1, 1, 1]];
+    const col = stag ? (Re < 1000 ? 3 : 1) : 2;
+    let C2 = 1;
+    if (NL < 16) {
+      if (NL <= 1) C2 = tbl[0][col];
+      else for (let i = 0; i < tbl.length - 1; i++) {
+        if (NL >= tbl[i][0] && NL <= tbl[i + 1][0]) {
+          const s = (NL - tbl[i][0]) / (tbl[i + 1][0] - tbl[i][0]);
+          C2 = tbl[i][col] + s * (tbl[i + 1][col] - tbl[i][col]);
+        }
+      }
+    }
+    return Nu * C2;
+  }
+  // Gaddis & Gnielinski (1985, VDI Heat Atlas) 관군 압력손실계수 (Re: 최소단면 유속 기준)
+  function gaddis(Re, a, b, stag) {
+    const base = 280 * Math.PI * (Math.pow(Math.pow(b, 0.5) - 0.6, 2) + 0.75);
+    let fl, ft, xt;
+    if (!stag) {
+      fl = base / ((4 * a * b - Math.PI) * Math.pow(a, 1.6));
+      ft = (0.22 + 1.2 * Math.pow(Math.max(1 - 0.94 / b, 0.01), 0.6) / Math.pow(Math.max(a - 0.85, 0.05), 1.3)) * Math.pow(10, 0.47 * (b / a - 1.5)) + 0.03 * (a - 1) * (b - 1);
+      xt = ft / Math.pow(Re, 0.1 * b / a);
+    } else {
+      const c = (b >= 0.5 * Math.sqrt(2 * a + 1)) ? a : Math.sqrt(a * a / 4 + b * b);
+      fl = base / ((4 * a * b - Math.PI) * Math.pow(c, 1.6));
+      ft = 2.5 + 1.2 / Math.pow(Math.max(a - 0.85, 0.05), 1.08) + 0.4 * Math.pow(b / a - 1, 3) - 0.01 * Math.pow(a / b - 1, 3);
+      xt = ft / Math.pow(Re, 0.25);
+    }
+    return fl / Re + xt * (1 - Math.exp(-(Re + 1000) / 2000));
+  }
+  // Martin (1977) 원형 노즐 배열
+  function martin(Re, Pr, d, S, Hgap) {
+    const f = Math.PI * d * d / (4 * S * S);
+    const Hd = Hgap / d, sf = Math.sqrt(f);
+    const K = Math.pow(1 + Math.pow(Hd / (0.6 / sf), 6), -0.05);
+    const G = 2 * sf * (1 - 2.2 * sf) / (1 + 0.2 * (Hd - 6) * sf);
+    return { Nu: K * G * 0.5 * Math.pow(Re, 2 / 3) * Math.pow(Pr, 0.42), f, Hd };
+  }
+  function finEff(h, k, D, H) { // 원형 핀, 끝단 단열 공식. A는 실제 높이, C는 보정 길이 L_c = H + D/4를 넣어 끝단 대류 근사
+    const m = Math.sqrt(4 * h / (k * D)), mH = m * H;
+    return mH < 1e-6 ? 1 : Math.tanh(mH) / mH;
+  }
+  function fDarcyPipe(Re) { return Re < 2300 ? 64 / Re : 0.316 * Math.pow(Re, -0.25); }
+  function poiseuilleRect(alpha) { // Fanning f·Re (Shah & London)
+    return 24 * (1 - 1.3553 * alpha + 1.9467 * alpha ** 2 - 1.7012 * alpha ** 3 + 0.9564 * alpha ** 4 - 0.2537 * alpha ** 5);
+  }
+  function gapScore(g) { // 막힘·세척성 (최소 간극 mm)
+    const mm = g * 1e3;
+    if (mm >= 1.0) return 5; if (mm >= 0.5) return 4 + (mm - 0.5) / 0.5; if (mm >= 0.3) return 3 + (mm - 0.3) / 0.2;
+    if (mm >= 0.15) return 2 + (mm - 0.15) / 0.15; return 1 + Math.max(0, mm / 0.15);
+  }
+
+  // ---------- 냉각면 모델: 각 함수는 (V, fluid props, p) → 대류측 결과 ----------
+  // 반환: heff(설치면적 기준), dp, rcalF(×1/(ṁcp)), devF, uniform, minGap, info, warn
+  function coolA(V, fp, p, g) { // 마이크로필라 미세유로
+    const D = g.D, H = g.H, ST = g.ST, SL = g.SL, stag = g.arr === 'stag';
+    const a = ST / D, b = SL / D;
+    const NT = Math.floor(p.W / ST), NL = Math.floor(p.L / SL);
+    const N = stag ? Math.round(NT * NL - Math.floor(NL / 2)) : NT * NL;
+    const uin = V / (p.W * H);
+    let umax = uin * ST / (ST - D), SD = null;
+    if (stag) { SD = Math.sqrt(SL * SL + (ST / 2) ** 2); if (SD < (ST + D) / 2) umax = uin * ST / (2 * (SD - D)); }
+    const Re = fp.rho * umax * D / fp.mu;
+    const Nu = zukauskas(Re, fp.Pr, stag, a, b, NL, fp.Prs);
+    const h = Nu * fp.k / D;
+    const eta = finEff(h, p.kBase, D, H);
+    const A = p.L * p.W, Ab = A - N * Math.PI * D * D / 4, Af = N * Math.PI * D * H;
+    const heff = h * (Ab + eta * Af) / A;
+    const xi = gaddis(Re, a, b, stag);
+    const dpCore = xi * NL * fp.rho * umax * umax / 2;
+    const uh = V / (p.W * g.Hhdr);
+    const dpMinor = 1.5 * fp.rho * uin * uin / 2 + 1.0 * fp.rho * uh * uh / 2;
+    const maldist = 0.5 * (fp.rho * uh * uh / 2) / dpCore;
+    const porosity = 1 - Math.PI * D * D / 4 / (ST * SL);
+    const gap = Math.min(ST - D, stag ? (SD - D) : SL - D);
+    const warn = [];
+    if (Re > 2e5) warn.push('Re가 Zukauskas 적용범위 초과');
+    if (Re < 1) warn.push('Re<1: 상관식 외삽');
+    if (H / D < 2) warn.push('H/D<2: 짧은 핀 → 끝벽 효과로 상관식 오차 큼(마이크로 핀핀 문헌 대비 과대 가능)');
+    if (a < 1.25 || b < 1.25) warn.push('피치/직경<1.25: Gaddis 압력손실식 범위 밖');
+    if (gap < 0.15e-3) warn.push('최소 간극<0.15 mm: 막힘 위험 큼');
+    return {
+      heff, h, Nu, Re, eta, dp: dpCore + dpMinor, dpCore, rcalF: 0.5 + 0.5 * p.chipL / p.L,
+      devF: Math.min(1, (p.chipL + 2e-3) / p.L), convDev: 0.08, uniform: clamp(1 - maldist, 0, 1), minGap: gap,
+      info: { N, NT, NL, porosity, areaRatio: (Ab + Af) / A, uin, umax, xi }, warn
+    };
+  }
+
+  // 노즐 입구 형상별 손실계수 (Idelchik): 날카로움 0.5, 모따기 0.25, 라운딩 0.05
+  const KIN = { sharp: 0.5, chamfer: 0.25, round: 0.05 };
+  // Shah(1978) 원관 발달 층류 겉보기 마찰계수 (Fanning): 입구 발달(Hagenbach) 효과 포함
+  function fappShah(Re, Ld) {
+    const xp = Ld / Re, sx = Math.sqrt(xp);
+    const fRe = 3.44 / sx + (1.25 / (4 * xp) + 16 - 3.44 / sx) / (1 + 0.00021 / (xp * xp));
+    return fRe / Re;
+  }
+  // Haaland(1983) 난류 마찰계수 (Darcy), 상대조도 반영 — Colebrook 근사, 오차 약 2% 이내
+  function fHaaland(Re, rr) { const x = -1.8 * Math.log10(Math.pow(rr / 3.7, 1.11) + 6.9 / Re); return 1 / (x * x); }
+  function jetCore(V, fp, p, d, S, ln, Hp, inlet, rough) {
+    const nx = Math.floor(p.L / S), ny = Math.floor(p.W / S), N = nx * ny;
+    const Aj = Math.PI * d * d / 4;
+    const vj = V / (N * Aj);
+    const Re = fp.rho * vj * d / fp.mu;
+    const q = fp.rho * vj * vj / 2;
+    const Kin = KIN[inlet] ?? 0.5;
+    const rr = (rough || 0) / d;
+    // 층류: 발달 층류 겉보기 마찰(조도 무관) / 난류: Haaland(조도 반영, 완전발달) / 천이 2300~4000: 선형 보간
+    const lamF = 4 * fappShah(Math.min(Re, 2300), ln / d) * (ln / d);   // Darcy 기준 마찰항 계수 (Re<2300일 때)
+    const lam = Re < 2300 ? 4 * fappShah(Re, ln / d) * (ln / d) : lamF * 2300 / Re;
+    const tur = fHaaland(Math.max(Re, 2300), rr) * ln / d + 0.1; // + 난류 입구 증분손실 K≈0.1 (가정, 문헌 범위 0.05~0.1)
+    const w = Re <= 2300 ? 0 : Re >= 4000 ? 1 : (Re - 2300) / 1700;
+    const kf = (1 - w) * lam + w * tur;
+    const regime = w === 0 ? '층류' : w === 1 ? '난류' : '천이';
+    const fric = kf * q;
+    const dpIn = Kin * q, dpOut = 1.0 * q;
+    const dpNoz = dpIn + fric + dpOut;
+    const up = V / (p.W * Hp);
+    const dpPlen = 1.0 * fp.rho * up * up / 2;
+    return { nx, ny, N, vj, Re, dpNoz, up, dpPlen, nozParts: { dpIn, fric, dpOut, Kin, kf, kfFD: (Re < 2300 ? 64 / Re : fHaaland(Re, rr)) * ln / d, xp: ln / d / Re, rr, regime } };
+  }
+
+  function coolB(V, fp, p, g) { // 평탄면 임핀징 제트 배열
+    const jc = jetCore(V, fp, p, g.d, g.S, g.ln, g.Hp, g.inlet, g.rough);
+    const m = martin(jc.Re, fp.Pr, g.d, g.S, g.Hj);
+    let h = m.Nu * fp.k / g.d, cf = 1;
+    let dpExh, rcalF, devF;
+    if (g.exh === 'side') {
+      cf = Math.max(0.6, 1 - 0.04 * (jc.nx / 2 - 1));
+      h *= cf;
+      const ucf = V / (2 * p.W * g.Hj);
+      dpExh = 1.0 * fp.rho * ucf * ucf / 2 + 0.5 * fp.rho * ucf * ucf / 2;
+      rcalF = 0.3; devF = 0.3;
+    } else {
+      dpExh = 0.25 * fp.rho * jc.vj * jc.vj / 2; rcalF = 0.1; devF = 0.05;
+    }
+    const maldist = 0.5 * jc.dpPlen / jc.dpNoz;
+    const warn = [];
+    if (jc.Re < 2000) warn.push(`Re_j=${jc.Re.toFixed(0)} < 2000: Martin 상관식 하한 밖(외삽)`);
+    if (jc.nozParts.regime !== '층류') warn.push(`노즐 내부 ${jc.nozParts.regime} (Re ${jc.Re.toFixed(0)}): 조도 ε/d=${jc.nozParts.rr.toExponential(1)} 반영`);
+    if (jc.Re > 1e5) warn.push('Re_j>1e5: Martin 상관식 상한 밖');
+    if (m.f < 0.004 || m.f > 0.04) warn.push(`상대 노즐면적 f=${m.f.toFixed(3)}: 범위(0.004~0.04) 밖`);
+    if (m.Hd < 2 || m.Hd > 12) warn.push(`H/d=${m.Hd.toFixed(1)}: 범위(2~12) 밖`);
+    if (g.exh === 'side') warn.push('측면 배출: 교차류 감쇠계수는 근사값');
+    return {
+      heff: h, h, Nu: m.Nu, Re: jc.Re, eta: 1, dp: jc.dpNoz + jc.dpPlen + dpExh, dpCore: jc.dpNoz,
+      rcalF, devF, convDev: g.exh === 'side' ? 0.12 : 0.15, uniform: clamp(1 - maldist, 0, 1), minGap: g.d,
+      info: { N: jc.N, nx: jc.nx, ny: jc.ny, vj: jc.vj, f: m.f, Hd: m.Hd, crossflow: cf, noz: jc.nozParts, dpExh, dpPlen: jc.dpPlen }, warn
+    };
+  }
+
+  function coolC(V, fp, p, g) { // 제트 + 마이크로필라
+    const jc = jetCore(V, fp, p, g.d, g.S, g.ln, g.Hp, g.inlet, g.rough);
+    const s = Math.max(g.Hj - g.Hpil, 0.05e-3);
+    const m = martin(jc.Re, fp.Pr, g.d, g.S, Math.max(s, g.d));
+    const hj = m.Nu * fp.k / g.d * g.chi;
+    const Np0 = Math.floor(p.L / g.Sp) * Math.floor(p.W / g.Sp);
+    const excl = jc.N * Math.max(1, Math.round(Math.PI * g.d * g.d / (4 * g.Sp * g.Sp)));
+    const Np = Math.max(0, Np0 - excl);
+    const Lc = g.Hpil + g.Dp / 4;              // 보정 핀 길이 (끝단 대류 근사, Harper & Brown · Incropera 3장). 열전달 계산에만 사용
+    const eta = finEff(hj, p.kBase, g.Dp, Lc);
+    const A = p.L * p.W, Ab = A - Np * Math.PI * g.Dp ** 2 / 4, Af = Np * Math.PI * g.Dp * Lc;
+    const heff = hj * (Ab + eta * Af) / A;
+    // 필라 사이 반경방향 통과 손실
+    const Vj = V / jc.N, r = g.S / 4;
+    const ur = Vj / (2 * Math.PI * r * g.Hpil);
+    const umax = ur * g.Sp / (g.Sp - g.Dp);
+    const Rep = fp.rho * umax * g.Dp / fp.mu;
+    const ap = g.Sp / g.Dp;
+    const Nr = Math.max(1, Math.round(g.S / (2 * g.Sp)));
+    const dpPin = gaddis(Math.max(Rep, 0.5), ap, ap, false) * Nr * fp.rho * umax * umax / 2;
+    const dpExh = 0.25 * fp.rho * jc.vj * jc.vj / 2;
+    const maldist = 0.5 * jc.dpPlen / (jc.dpNoz + dpPin);
+    const warn = [];
+    if (jc.Re < 2000) warn.push(`Re_j=${jc.Re.toFixed(0)} < 2000: Martin 상관식 외삽`);
+    if (jc.nozParts.regime !== '층류') warn.push(`노즐 내부 ${jc.nozParts.regime} (Re ${jc.Re.toFixed(0)}): 조도 반영`);
+    if (g.Hj <= g.Hpil + 0.1e-3) warn.push('제트-필라 끝 간격이 0.1 mm 이하: 유동 정체·우회 위험');
+    if (s / g.d < 1) warn.push('필라 끝까지 거리/노즐직경<1: 제트 상관식 범위 밖');
+    warn.push(`χ=${g.chi}: 필라에 의한 벽면제트 감쇠계수(가정값, 문헌·CFD로 보정 필요)`);
+    return {
+      heff, h: hj, Nu: m.Nu, Re: jc.Re, eta, dp: jc.dpNoz + jc.dpPlen + dpPin + dpExh, dpCore: jc.dpNoz + dpPin,
+      rcalF: 0.1, devF: 0.05, convDev: 0.08, uniform: clamp(1 - maldist, 0, 1), minGap: Math.min(g.d, g.Sp - g.Dp),
+      info: { N: jc.N, Np, nx: jc.nx, ny: jc.ny, vj: jc.vj, f: m.f, Hd: s / g.d, areaRatio: (Ab + Af) / A, porosity: 1 - Math.PI * g.Dp ** 2 / 4 / g.Sp ** 2, dpPin, RePin: Rep, Lc, noz: jc.nozParts, dpExh, dpPlen: jc.dpPlen }, warn
+    };
+  }
+
+  function coolD(V, tf, p, g, Tin, Asrc) { // 2상 미세채널 (포화 입구, T_sat,in = T_in)
+    const wc = g.wc, ww = g.ww, Hc = g.Hc;
+    const N = Math.floor(p.W / (wc + ww));
+    const rhoG = rhoV(tf, Tin), rhoL = tf.rhoL;
+    const mdot = rhoL * V;
+    const G = mdot / (N * wc * Hc);
+    const Dh = 4 * wc * Hc / (2 * (wc + Hc));
+    const xout = p.Q / (mdot * tf.hfg);
+    const x = clamp(xout / 2, 0.005, 0.95);
+    const PH = wc + 2 * Hc, PF = 2 * wc + 2 * Hc;
+    const qH = p.Q / (N * p.L * PH);
+    const Bo = qH / (G * tf.hfg);
+    const PR = psat(tf, Tin) / (tf.Pc || 3e6);
+    const Ref = G * (1 - x) * Dh / tf.muL;
+    const Prf = tf.muL * tf.cpL / tf.kL;
+    const Wefo = G * G * Dh / (rhoL * tf.sigma);
+    const Xtt = Math.pow(tf.muL / tf.muV, 0.1) * Math.pow((1 - x) / x, 0.9) * Math.pow(rhoG / rhoL, 0.5);
+    const hsp = 0.023 * Math.pow(Ref, 0.8) * Math.pow(Prf, 0.4) * tf.kL / Dh;
+    const hnb = 2345 * Math.pow(Bo * PH / PF, 0.7) * Math.pow(PR, 0.38) * Math.pow(1 - x, -0.51) * hsp;
+    const hcb = (5.2 * Math.pow(Bo * PH / PF, 0.08) * Math.pow(Wefo, -0.54) + 3.5 * Math.pow(1 / Xtt, 0.94) * Math.pow(rhoG / rhoL, 0.25)) * hsp;
+    const h = Math.sqrt(hnb * hnb + hcb * hcb);
+    const m = Math.sqrt(2 * h / (p.kBase * ww)), mH = m * Hc;
+    const eta = Math.tanh(mH) / mH;
+    const heff = h * (wc + 2 * eta * Hc) / (wc + ww);
+    // 균질류 압력강하
+    const vf = 1 / rhoL, vg = 1 / rhoG, vfg = vg - vf;
+    const muTP = 1 / (x / tf.muV + (1 - x) / tf.muL);
+    const ReTP = G * Dh / muTP;
+    const alpha = Math.min(wc, Hc) / Math.max(wc, Hc);
+    const fF = ReTP < 2300 ? poiseuilleRect(alpha) / ReTP : 0.079 * Math.pow(ReTP, -0.25);
+    const dpF = 2 * fF * G * G * p.L / Dh * vf * (1 + xout / 2 * vfg / vf);
+    const dpAcc = G * G * vfg * xout;
+    const uin = V / (p.W * Hc);
+    const uh = V / (p.W * g.Hhdr);
+    const Gc = mdot / (p.W * Hc);
+    const dpMinor = 1.5 * rhoL * uin * uin / 2 + 1.0 * Gc * Gc * vf * (1 + xout * vfg / vf) / 2 + rhoL * uh * uh / 2;
+    const dp = dpF + dpAcc + dpMinor;
+    const Pin = psat(tf, Tin), Pout = Pin - dp;
+    const TsatOut = Pout > 1000 ? tsat(tf, Pout) : -99;
+    // CHF (Qu & Mudawar 2004) vs 국부 피크 열유속
+    const WeL = G * G * p.L / (tf.sigma * rhoL);
+    const qCHF = 33.43 * G * tf.hfg * Math.pow(rhoG / rhoL, 1.11) * Math.pow(WeL, -0.21) * Math.pow(p.L / Dh, -0.36);
+    const qPeak = qH * Math.sqrt((p.L * p.W) / Asrc);
+    const chfMargin = qCHF / qPeak;
+    const maldist = 0.5 * (rhoL * uh * uh / 2) / dp;
+    const warn = [];
+    if (xout > 1) warn.push(`출구 건도 ${xout.toFixed(2)} > 1: 완전 증발(건조) — 유량 부족`);
+    else if (xout > 0.6) warn.push(`출구 건도 ${xout.toFixed(2)} > 0.6: 건조영역(dry-out) 위험`);
+    if (chfMargin < 1.5) warn.push(`CHF 여유 ${chfMargin.toFixed(2)} < 1.5: 임계열유속 위험`);
+    if (Pout < 0.3 * Pin) warn.push('압력강하가 입구압의 70% 초과: 포화온도 급변·플래싱');
+    if (Pin < 101325) warn.push(`작동압력 ${(Pin / 1e5).toFixed(2)} bar < 대기압: 공기 유입 방지 필요`);
+    warn.push('2상 미세채널은 압력·유량 진동(Ledinegg 불안정) 가능 → 입구 오리피스 권장');
+    return {
+      heff, h, Nu: h * Dh / tf.kL, Re: G * Dh / tf.muL, eta, dp, dpCore: dpF + dpAcc, rcalF: 0, devF: 0,
+      convDev: 0.08, uniform: clamp(1 - maldist, 0, 1) * (xout > 0.6 ? 0.85 : 1), minGap: wc,
+      tp: { xout, G, Pin, Pout, TsatOut, dTsat: Tin - TsatOut, rhoG, qCHF, qPeak, chfMargin, Bo, hnb, hcb, mdot },
+      info: { N, Dh, G, areaRatio: (wc + 2 * Hc) / (wc + ww) }, warn
+    };
+  }
+
+  function coolRef(V, fp, p, g) { // 기준: 평탄 미세유로 (필라 없음, 채널 높이 = A의 H)
+    const H = g.H, Dh = 2 * H;
+    const u = V / (p.W * H);
+    const Re = u * Dh / fp.nu;
+    let Nu;
+    if (Re < 2300) {
+      const Gz = Dh / p.L * Re * fp.Pr; // 입구영역 보정(Stephan 형태 근사)
+      Nu = 5.385 + 0.024 * Math.pow(Gz, 1.14) / (1 + 0.0358 * Math.pow(Gz, 0.64) * Math.pow(fp.Pr, 0.17));
+    } else {
+      const f = Math.pow(0.79 * Math.log(Re) - 1.64, -2);
+      Nu = (f / 8) * (Re - 1000) * fp.Pr / (1 + 12.7 * Math.sqrt(f / 8) * (Math.pow(fp.Pr, 2 / 3) - 1));
+    }
+    const h = Nu * fp.k / Dh;
+    const fD = Re < 2300 ? 96 / Re : 0.316 * Math.pow(Re, -0.25);
+    const dp = fD * p.L / Dh * fp.rho * u * u / 2 + 1.5 * fp.rho * u * u / 2;
+    return { heff: h, h, Nu, Re, eta: 1, dp, dpCore: dp, rcalF: 0.5 + 0.5 * p.chipL / p.L, devF: Math.min(1, (p.chipL + 2e-3) / p.L), convDev: 0.05, uniform: 0.95, minGap: H, info: { u }, warn: [] };
+  }
+
+  // ---------- 한 경우 평가 ----------
+  function evaluate(cs, V, P) {
+    const p = P.common;
+    const pk = packageR(p);
+    let cr, fp = null, Tf = P.Tin, ref;
+    if (cs.type === 'D') {
+      const tf = TPFLUIDS[cs.fluid];
+      cr = coolD(V, tf, p, P.geo.D, P.Tin, pk.Asrc);
+      ref = { rho: tf.rhoL, cp: tf.cpL };
+    } else {
+      const f = FLUIDS[cs.fluid];
+      fp = props1p(f, P.Tin);
+      let Ts = null;
+      for (let it = 0; it < 5; it++) {
+        const fn = cs.type === 'A' ? coolA : cs.type === 'B' ? coolB : cs.type === 'C' ? coolC : coolRef;
+        const gg = cs.type === 'REF' ? P.geo.A : P.geo[cs.type];
+        cr = fn(V, fp, p, gg);
+        const mdot = fp.rho * V;
+        const dT = p.Q / (mdot * fp.cp);
+        Tf = P.Tin + Math.min(dT, 150) / 2;
+        const Awet = p.L * p.W * ((cr.info && cr.info.areaRatio) || 1);
+        Ts = Tf + Math.min(p.Q / (cr.h * Awet), 200); // 젖은 면적 평균 냉각면 온도 = T_f + Q/(h·A_wet)
+        fp = props1p(f, Tf);
+        fp.Ts = Ts; fp.Prs = props1p(f, Ts).Pr;
+      }
+      ref = fp;
+    }
+    const mdot = ref.rho * V;
+    const br = baseR(p, pk.Asrc, cr.heff);
+    const Rcal = cs.type === 'D' ? 0 : cr.rcalF / (mdot * ref.cp);
+    const Rtot = pk.Rpkg + br.R1D + br.Rsp + br.Rconv + Rcal;
+    const Tj = P.Tin + p.Q * Rtot;
+    const dTf = cs.type === 'D' ? 0 : p.Q / (mdot * ref.cp);
+    let dev = cr.devF * dTf + cr.convDev * p.Q * br.Rconv;
+    if (cs.type === 'D') dev += Math.max(0, cr.tp.dTsat);
+    const W = cr.dp * V / P.etaPump;
+    const warn = cr.warn.slice();
+    if (cs.type !== 'D' && Tf > 0 && dTf > 40) warn.push(`유체 온도상승 ${dTf.toFixed(0)} K: 유량 부족`);
+    return {
+      cs, V, mdot, dp: cr.dp, W, Tj, Rth: Rtot, dTf, Tout: P.Tin + dTf, dev,
+      R: { layers: pk.layers, Rpkg: pk.Rpkg, R1D: br.R1D, Rsp: br.Rsp, Rconv: br.Rconv, Rcal },
+      Bi: br.Bi, cr, fp, warn, feasible: !(cs.type === 'D' && cr.tp.xout > 1)
+    };
+  }
+
+  // ---------- 비교 조건으로 유량 결정 ----------
+  function solve(cs, P, mode, target) {
+    let lo = 1e-8, hi = 2e-3;
+    if (cs.type === 'D') {
+      const tf = TPFLUIDS[cs.fluid];
+      lo = P.common.Q / (0.98 * tf.hfg) / tf.rhoL;
+    }
+    if (mode === 'flow') return evaluate(cs, Math.max(target, cs.type === 'D' ? 0 : 0), P);
+    const fn = V => { const r = evaluate(cs, V, P); return mode === 'power' ? r.W : r.dp; };
+    if (fn(lo) > target) { const r = evaluate(cs, lo, P); r.limited = true; return r; }
+    if (fn(hi) < target) { const r = evaluate(cs, hi, P); r.limited = true; return r; }
+    let a = Math.log(lo), b = Math.log(hi);
+    for (let i = 0; i < 60; i++) {
+      const m = (a + b) / 2;
+      if (fn(Math.exp(m)) > target) b = m; else a = m;
+    }
+    return evaluate(cs, Math.exp((a + b) / 2), P);
+  }
+
+  // ---------- 가중치 평가 ----------
+  const CRIT = [
+    { key: 'Tj', name: '칩 최고온도', w: 20, dir: -1 },
+    { key: 'dev', name: '칩 온도편차', w: 10, dir: -1 },
+    { key: 'Rth', name: '접합부-유체 열저항', w: 10, dir: -1 },
+    { key: 'uniform', name: '유량 균일도', w: 10, dir: 1 },
+    { key: 'dp', name: '압력강하', w: 5, dir: -1 },
+    { key: 'W', name: '순환(펌프)동력', w: 5, dir: -1 },
+    { key: 'clog', name: '막힘·세척성', w: 10, dir: 1, qual: true },
+    { key: 'fab', name: '제작·접합 가능성', w: 10, dir: 1, qual: true },
+    { key: 'diel', name: '전기절연', w: 10, dir: 1, qual: true },
+    { key: 'cost', name: '비용', w: 10, dir: 1, qual: true }
+  ];
+  function rawMetric(r, key, P) {
+    switch (key) {
+      case 'Tj': return r.Tj; case 'dev': return r.dev; case 'Rth': return r.Rth; case 'uniform': return r.cr.uniform;
+      case 'dp': return r.dp; case 'W': return r.W;
+      case 'clog': return gapScore(r.cr.minGap);
+      case 'fab': return P.fab[r.cs.type];
+      case 'diel': return r.cs.type === 'D' ? TPFLUIDS[r.cs.fluid].diel : FLUIDS[r.cs.fluid].diel;
+      case 'cost': {
+        const fc = r.cs.type === 'D' ? TPFLUIDS[r.cs.fluid].cost : FLUIDS[r.cs.fluid].cost;
+        return clamp(P.costBase[r.cs.type] + fc, 1, 5);
+      }
+    }
+  }
+  function score(results, weights, P) {
+    const ok = results.filter(r => r.feasible);
+    const table = results.map(r => ({ r, s: {}, raw: {}, total: 0 }));
+    for (const c of CRIT) {
+      const vals = ok.map(r => rawMetric(r, c.key, P));
+      const mn = Math.min(...vals), mx = Math.max(...vals);
+      for (const row of table) {
+        const v = rawMetric(row.r, c.key, P);
+        row.raw[c.key] = v;
+        let s;
+        if (c.qual) s = v;
+        else if (c.key === 'uniform') s = 1 + 4 * clamp((v - 0.8) / 0.2, 0, 1); // 절대척도: 차이가 1%p 수준이면 점수차도 작게
+        else if (mx - mn < 1e-12 * Math.max(1, Math.abs(mx))) s = 5;
+        else s = c.dir < 0 ? 1 + 4 * (mx - v) / (mx - mn) : 1 + 4 * (v - mn) / (mx - mn);
+        row.s[c.key] = clamp(s, 1, 5);
+      }
+    }
+    const wsum = CRIT.reduce((s, c) => s + (weights[c.key] || 0), 0) || 1;
+    for (const row of table) {
+      row.total = row.r.feasible ? CRIT.reduce((s, c) => s + row.s[c.key] * (weights[c.key] || 0), 0) / wsum * 20 : 0;
+    }
+    return table;
+  }
+
+  return { FLUIDS, TPFLUIDS, MAT, props1p, psat, tsat, rhoV, packageR, baseR, evaluate, solve, score, CRIT, gapScore };
+})();
+if (typeof module !== 'undefined') module.exports = TC;
+
+</script>
+<script>
+(function () {
+  const $ = s => document.querySelector(s);
+  const mm = 1e-3;
+  const TYPES = {
+    A: { name: '마이크로필라 미세유로', short: '필라', color: 'var(--cA)' },
+    B: { name: '임핀징 제트 (평탄면)', short: '제트', color: 'var(--cB)' },
+    C: { name: '제트 + 마이크로필라', short: '제트+필라', color: 'var(--cC)' },
+    D: { name: '2상 미세채널', short: '2상', color: 'var(--cD)' },
+    REF: { name: '기준: 평탄 미세유로', short: '기준', color: 'var(--cR)' }
+  };
+  const fmt = (x, d = 2) => (x === undefined || x === null || !isFinite(x)) ? '–' : Number(x).toFixed(d);
+  const fmtS = (x, sig = 3) => (!isFinite(x)) ? '–' : (Math.abs(x) >= 100 ? x.toFixed(0) : Number(x.toPrecision(sig)).toString());
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  // ---------------- 입력 정의 ----------------
+  const LAYERS = [
+    ['SiC 다이', 0.18, 118], ['다이 접합 (SAC305 솔더)', 0.08, 50], ['DBC 상부 Cu', 0.30, 390],
+    ['세라믹 (AlN)', 0.38, 170], ['DBC 하부 Cu', 0.30, 390], ['기판 접합 (솔더)', 0.30, 50]
+  ];
+  const SPEC = {
+    common: [
+      ['Q', '칩 발열량 Q_chip', 'W', 42.5], ['chipL', '칩 길이 (유동방향)', 'mm', 5], ['chipW', '칩 폭', 'mm', 5],
+      ['L', '설치(냉각) 면적 길이', 'mm', 12], ['W', '설치(냉각) 면적 폭', 'mm', 12],
+      ['Tin', '냉각유체 입구온도 T_f,in', '°C', 70], ['eta', '펌프 효율 η_pump', '%', 50]
+    ],
+    A: [['D', '필라 직경 D', 'mm', 0.5], ['H', '필라 높이 H (=채널 높이)', 'mm', 1.0], ['ST', '횡방향 피치 S_T', 'mm', 1.0], ['SL', '유동방향 피치 S_L', 'mm', 1.0], ['Hhdr', '입출구 헤더 높이', 'mm', 3]],
+    B: [['d', '노즐 직경 d', 'mm', 0.5], ['S', '노즐 간격 S (정사각 배열)', 'mm', 2.5], ['Hj', '제트-표면 거리 H', 'mm', 1.5], ['ln', '노즐 길이 (판 두께)', 'mm', 1.0], ['Hp', '공급 플레넘 높이', 'mm', 3], ['rough', '노즐 내벽 조도 ε', 'µm', 2]],
+    C: [['d', '노즐 직경 d', 'mm', 0.5], ['S', '노즐 간격 S', 'mm', 2.5], ['Hj', '제트-기판 거리 H', 'mm', 1.5], ['ln', '노즐 길이', 'mm', 1.0], ['Hp', '공급 플레넘 높이', 'mm', 3], ['rough', '노즐 내벽 조도 ε', 'µm', 2],
+      ['Dp', '필라 직경 D_p', 'mm', 0.4], ['Hpil', '필라 높이 H_p', 'mm', 0.8], ['Sp', '필라 피치 S_p (정렬)', 'mm', 0.8], ['chi', '벽면제트 감쇠계수 χ', '–', 1.0]],
+    D: [['wc', '채널 폭 w_c', 'mm', 0.3], ['ww', '채널 벽 두께 w_w', 'mm', 0.2], ['Hc', '채널 높이 H_c', 'mm', 1.0], ['Hhdr', '입출구 헤더 높이', 'mm', 3]]
+  };
+  const QUAL = { fab: { A: 4, B: 3, C: 2, D: 2 }, cost: { A: 4, B: 3.5, C: 2.5, D: 1.5 } };
+
+  function fld(id, label, unit, val, step) {
+    return `<div class="fld"><label for="${id}">${label} <small>${unit}</small></label><input id="${id}" type="number" step="${step || 'any'}" value="${val}"></div>`;
+  }
+  function sel(id, label, opts, val) {
+    return `<div class="fld fsel"><label for="${id}">${label}</label><select id="${id}">${opts.map(([k, t]) => `<option value="${k}" ${k === val ? 'selected' : ''}>${t}</option>`).join('')}</select></div>`;
+  }
+  function buildInputs() {
+    const spOpts = Object.entries(TC.FLUIDS).map(([k, f]) => [k, f.name]);
+    const tpOpts = Object.entries(TC.TPFLUIDS).map(([k, f]) => [k, f.name]);
+    let h = '';
+    h += `<details class="grp" open><summary>비교 기준 <span class="tag">수행항목 4)</span></summary>
+      <div class="modes" role="radiogroup" aria-label="비교 기준">
+        <label><input type="radio" name="mode" value="power" checked> 동일 펌프동력 (기본)</label>
+        <label><input type="radio" name="mode" value="dp"> 공통 압력강하 제한</label>
+        <label><input type="radio" name="mode" value="flow"> 동일 유량</label>
+      </div>
+      ${fld('tW', '목표 펌프동력 W_pump', 'W', 0.0133)}
+      ${fld('tDp', '압력강하 제한 Δp', 'kPa', 2.2)}
+      ${fld('tV', '유량 V̇', 'L/min', 0.33)}
+      <div class="modes"><label><input type="checkbox" id="xflow" checked> 동일 유량 비교표 추가</label></div>
+      <p class="note">기본값은 다이 1개(5×5 mm) 단위셀 기준 논문값입니다. 펌프동력 0.0133 W = NREL 인버터 해석 0.16 W ÷ 소자 12개, Δp 2.2 kPa = 같은 해석의 압력강하, 유량 0.33 L/min = NREL 실험 4 L/min ÷ 소자 12개. 펌프동력 = Δp·V̇/η.</p></details>`;
+    h += `<details class="grp" open><summary>공통 조건 <span class="tag">모든 경우 동일</span></summary>${SPEC.common.map(([k, l, u, v]) => fld('c_' + k, l, u, v)).join('')}</details>`;
+    h += `<details class="grp" open><summary>절연 냉각유체 지정 <span class="tag">수행항목 2)</span></summary>
+      ${sel('sp1', '절연유체 (A·B·C 공통)', spOpts, 'amp110')}
+      <p class="note">기본값 AmpCool 110은 NREL 절연유체 냉각 실험에 쓰인 유체입니다. A·B·C 모두 같은 유체를 써서 구조 차이만 비교합니다.</p>
+      <details><summary class="note" style="cursor:pointer">사용자 정의 유체 물성 (데이터시트 입력)</summary>
+        ${fld('cu_rho', 'ρ (25 °C)', 'kg/m³', 800)}${fld('cu_cp', 'c_p (25 °C)', 'J/kg·K', 2100)}${fld('cu_k', 'k (25 °C)', 'W/m·K', 0.14)}
+        ${fld('cu_n40', 'ν (40 °C)', 'cSt', 4.0)}${fld('cu_n100', 'ν (100 °C)', 'cSt', 1.5)}${fld('cu_diel', '절연 점수', '1~5', 4)}
+      </details></details>`;
+    h += `<details class="grp"><summary>패키지 조건 <span class="tag">모든 경우 동일</span></summary>
+      <table><thead><tr><th>층</th><th class="n">두께 mm</th><th class="n">k W/m·K</th></tr></thead><tbody>
+      ${LAYERS.map((l, i) => `<tr><td style="font-size:12px">${l[0]}</td><td><input id="ly_t${i}" type="number" step="any" value="${l[1]}" aria-label="${l[0]} 두께"></td><td><input id="ly_k${i}" type="number" step="any" value="${l[2]}" aria-label="${l[0]} 열전도율"></td></tr>`).join('')}
+      </tbody></table>
+      ${sel('baseMat', '열확산판·냉각기판 재질', Object.entries(TC.MAT).map(([k, m]) => [k, `${m.name} (k=${m.k})`]), 'Cu')}
+      ${fld('tBase', '냉각기판 두께 (필라/채널 바닥까지)', 'mm', 2.0)}
+      <p class="note">필라·채널 벽은 냉각기판과 같은 재질로 일체 가공한다고 가정(활성 다이 직접 가공 아님, PDF 권고).</p></details>`;
+    h += `<details class="grp"><summary><span><span class="sw" style="background:var(--cA)"></span>A. 마이크로필라 미세유로</span></summary>${SPEC.A.map(([k, l, u, v]) => fld('A_' + k, l, u, v)).join('')}${sel('A_arr', '배열', [['stag', '엇갈림 (staggered)'], ['inline', '정렬 (inline)']], 'stag')}</details>`;
+    h += `<details class="grp"><summary><span><span class="sw" style="background:var(--cB)"></span>B. 임핀징 제트</span></summary>${SPEC.B.map(([k, l, u, v]) => fld('B_' + k, l, u, v)).join('')}${sel('B_exh', '배출 방식', [['dist', '분산 배출 (노즐 사이 회수)'], ['side', '측면 배출 (교차류)']], 'dist')}${sel('B_inlet', '노즐 입구 형상', [['sharp', '날카로움 (K 0.5)'], ['chamfer', '모따기 (K 0.25)'], ['round', '라운딩 (K 0.05)']], 'sharp')}</details>`;
+    h += `<details class="grp"><summary><span><span class="sw" style="background:var(--cC)"></span>C. 제트 + 마이크로필라</span></summary>${SPEC.C.map(([k, l, u, v]) => fld('C_' + k, l, u, v)).join('')}${sel('C_inlet', '노즐 입구 형상', [['sharp', '날카로움 (K 0.5)'], ['chamfer', '모따기 (K 0.25)'], ['round', '라운딩 (K 0.05)']], 'sharp')}<p class="note">필라는 제트 정체점 바로 아래에서 제외하고, 필라 사이로 반경방향 유출합니다.</p></details>`;
+    h += `<details class="grp"><summary>정성 평가 점수 <span class="tag">수행항목 5)</span></summary>
+      <p class="note">1(나쁨)~5(좋음). 막힘·세척성과 절연은 최소 간극과 유체에서 자동 산정합니다.</p>
+      <table><thead><tr><th>구조</th><th class="n">제작·접합</th><th class="n">비용(구조)</th></tr></thead><tbody>
+      ${['A', 'B', 'C'].map(t => `<tr><td>${t}. ${TYPES[t].short}</td><td><input id="q_fab_${t}" type="number" min="1" max="5" step="0.5" value="${QUAL.fab[t]}" aria-label="${t} 제작 점수"></td><td><input id="q_cost_${t}" type="number" min="1" max="5" step="0.5" value="${QUAL.cost[t]}" aria-label="${t} 비용 점수"></td></tr>`).join('')}
+      </tbody></table><p class="note">비용 점수 = 구조 점수 + 유체 보정(에스터 −0.5, 불소계 −2 등).</p></details>`;
+    $('#inputs').innerHTML = h;
+  }
+
+  const num = id => { const v = parseFloat(document.getElementById(id).value); return isFinite(v) ? v : 0; };
+  function readP() {
+    const c = {};
+    SPEC.common.forEach(([k]) => c[k] = num('c_' + k));
+    const cu = TC.FLUIDS.custom;
+    cu.rho25 = num('cu_rho'); cu.cp25 = num('cu_cp'); cu.k25 = num('cu_k'); cu.nu40 = Math.max(num('cu_n40'), 0.05); cu.nu100 = Math.max(Math.min(num('cu_n100'), cu.nu40 * 0.99), 0.02); cu.diel = num('cu_diel');
+    const geo = {};
+    for (const t of ['A', 'B', 'C']) {
+      geo[t] = {};
+      SPEC[t].forEach(([k, , u]) => geo[t][k] = num(t + '_' + k) * (u === 'mm' ? mm : u === 'µm' ? 1e-6 : 1));
+    }
+    geo.A.arr = $('#A_arr').value; geo.B.exh = $('#B_exh').value; geo.B.inlet = $('#B_inlet').value; geo.C.inlet = $('#C_inlet').value;
+    const mode = document.querySelector('input[name=mode]:checked').value;
+    return {
+      Tin: c.Tin, etaPump: Math.max(c.eta, 1) / 100, mode,
+      target: mode === 'power' ? num('tW') : mode === 'dp' ? num('tDp') * 1e3 : num('tV') / 6e4,
+      xflow: $('#xflow').checked, flowV: num('tV') / 6e4,
+      common: {
+        Q: c.Q, chipL: c.chipL * mm, chipW: c.chipW * mm, L: Math.max(c.L, c.chipL) * mm, W: Math.max(c.W, c.chipW) * mm,
+        tBase: num('tBase') * mm, kBase: TC.MAT[$('#baseMat').value].k, baseMat: $('#baseMat').value,
+        layers: LAYERS.map((l, i) => ({ name: l[0], t: num('ly_t' + i) * mm, k: num('ly_k' + i) }))
+      },
+      geo,
+      fluids: { sp1: $('#sp1').value, tp1: 'r1233' },
+      fab: Object.fromEntries(['A', 'B', 'C'].map(t => [t, num('q_fab_' + t)])),
+      costBase: Object.fromEntries(['A', 'B', 'C'].map(t => [t, num('q_cost_' + t)]))
+    };
+  }
+  function buildCases(P) {
+    const L = [];
+    for (const t of ['A', 'B', 'C']) {
+      for (const i of [1]) {
+        const fluid = t === 'D' ? P.fluids['tp' + i] : P.fluids['sp' + i];
+        const fname = t === 'D' ? TC.TPFLUIDS[fluid].name : TC.FLUIDS[fluid].name;
+        L.push({ id: t, type: t, fluid, fi: i, fname, label: t, long: `${TYPES[t].name} + ${fname}` });
+      }
+    }
+    return L;
+  }
+  const fluidName = cs => cs.type === 'D' ? TC.TPFLUIDS[cs.fluid].name : TC.FLUIDS[cs.fluid].name;
+  const modeTxt = P => P.mode === 'power' ? `동일 펌프동력 ${fmtS(P.target)} W` : P.mode === 'dp' ? `공통 Δp ${fmtS(P.target / 1e3)} kPa` : `동일 유량 ${fmtS(P.target * 6e4)} L/min`;
+
+  // ---------------- 상태 ----------------
+  let S = {};
+  function compute() {
+    const P = readP();
+    const cases = buildCases(P);
+    const res = cases.map(cs => Object.assign(TC.solve(cs, P, P.mode, P.target), { cs }));
+    const refCs = { id: 'REF', type: 'REF', fluid: P.fluids.sp1, label: 'REF', long: '기준: 평탄 미세유로 + ' + TC.FLUIDS[P.fluids.sp1].name };
+    const ref = Object.assign(TC.solve(refCs, P, P.mode, P.target), { cs: refCs });
+    const flowRes = P.xflow ? cases.map(cs => Object.assign(TC.solve(cs, P, 'flow', P.flowV), { cs })) : null;
+    const W = getWeights();
+    const sc = TC.score(res, W, P);
+    S = { P, cases, res, ref, flowRes, W, sc };
+  }
+
+  // ---------------- 탭 ----------------
+  const TABS = [
+    ['adev', 'A', '예비설계 산출물'],
+    ['pdf', '✓', 'PDF 평가기준 점검'],
+    ['paper', '0)', '논문 조건·검증'],
+    ['path', '1)', '열전달 경로·열저항망'], ['fluid', '2)', '유체 선정표'], ['geo', '3)', '냉각 구조도·설계변수표'],
+    ['cmp', '4)', '공정 비교표'], ['score', '5)', '가중치 평가표'], ['sel', '6)', '선정·민감도'],
+    ['sweep', '+', '형상 파라미터 스윕'], ['verify', 'ⓥ', '계산 검증'], ['notes', 'ⓘ', '가정·한계·출처']
+  ];
+  let active = 'pdf';
+  function buildTabs() {
+    $('#tabs').innerHTML = TABS.map(([k, n, t]) => `<button class="tab" role="tab" id="t-${k}" aria-controls="v-${k}" aria-selected="${k === active}"><span class="k">${n}</span>${t}</button>`).join('');
+    TABS.forEach(([k]) => $('#t-' + k).addEventListener('click', () => { setTab(k); try { history.replaceState(null, '', '#' + k); } catch (e) { location.hash = k; } }));
+  }
+  function setTab(k) {
+    if (!TABS.some(t => t[0] === k)) k = 'adev';
+    active = k;
+    TABS.forEach(([t]) => { $('#t-' + t).setAttribute('aria-selected', t === k); $('#v-' + t).classList.toggle('on', t === k); });
+    renderView(k);
+  }
+
+  // ---------------- 공통 렌더 도우미 ----------------
+  const caseColor = cs => TYPES[cs.type].color;
+  const sw = cs => `<span class="sw" style="background:${caseColor(cs)};${cs.fi === 2 ? 'opacity:.55' : ''}"></span>`;
+  const bestBy = (arr, f) => arr.filter(r => r.feasible).reduce((b, r) => (!b || f(r) < f(b)) ? r : b, null);
+  function warnPill(r) {
+    const n = r.warn.length + (r.limited ? 1 : 0);
+    if (!r.feasible) return '<span class="pill b">불가</span>';
+    if (r.limited) return '<span class="pill b">목표 미달</span>';
+    return n ? `<span class="pill w">주의 ${n}</span>` : '<span class="pill ok">정상</span>';
+  }
+
+  function renderSummary() {
+    const { P, res, sc } = S;
+    const best = sc.filter(s => s.r.feasible).sort((a, b) => b.total - a.total)[0];
+    const bT = bestBy(res, r => r.Tj);
+        $('#summary').innerHTML = `<span class="chip">비교 기준 <b>${modeTxt(P)}</b></span>
+      <span class="chip">Q <b class="num">${fmtS(P.common.Q)} W</b> · T_in <b class="num">${fmtS(P.Tin)} °C</b></span>
+      <span class="chip">유체 <b>${esc(TC.FLUIDS[P.fluids.sp1].name)}</b></span>
+      <span class="chip">최저 Tj <b>${bT.cs.id}</b> <span class="num">${fmt(bT.Tj, 1)} °C · R'' ${fmt(bT.Rth * P.common.chipL * P.common.chipW * 1e6, 1)} mm²K/W</span></span>
+      <span class="chip" style="border-color:var(--good)">종합 1위 <b>${best.r.cs.id}</b> <span class="num">${fmt(best.total, 1)}점</span></span>`;
+  }
+
+  // ---------------- 0) 논문 조건·검증 ----------------
+  const REFS = [
+    { k: 'R1', t: 'Moreno et al. (NREL), Dielectric Fluid Cooling of Power Modules using new Driveline Fluids, IEEE EPS 2023 / NREL AMR 2023·2024', u: 'https://eps.ieee.org/images/files/enews/Dielectric_Fluid_Cooling_of_Power_Modules_using_new_Driveline_Fluids-Final_2.pdf' },
+    { k: 'R2', t: 'NREL, Thermal Optimization and Experimental Demonstration of a SiC Half-Bridge Power Module (jet impingement, WEG), IMAPS 2024', u: 'https://imapsource.org/article/129629.pdf' },
+    { k: 'R3', t: 'NREL, Power Electronics Thermal Management (dielectric cooling concept, 100 kW/L), DOE AMR 2019 / NREL 2019 MIT talk', u: 'https://www.nrel.gov/docs/fy19osti/73547.pdf' },
+    { k: 'R4', t: 'Engineered Fluids, AmpCool AC-100 series Technical Data Sheet (2026)', u: 'https://www.engineeredfluids.com/wp-content/uploads/2026/05/AmpCool-AC-1XX-ENG-Technical-Data-Sheet-AC-1XX-ENG-TDS-20260505-1.pdf' },
+    { k: 'R5', t: 'NREL, Electric Drive Technologies FY24 poster (AmpCool 110 70 °C 실측 물성)', u: 'https://nrel.gov/docs/fy24osti/89404.pdf' },
+    { k: 'R6', t: 'Waye et al., Advanced Liquid Cooling for a Traction Drive Inverter Using Jet Impingement and Microfinned Enhanced Surfaces, NREL/CP-5400-61060, 2014 (PDF 참고자료)', u: 'https://www.nrel.gov/docs/fy14osti/61060.pdf' }
+  ];
+  const COND = [
+    ['칩', 'SiC MOSFET 5 × 5 mm, 두께 0.18 mm (스위치당 2개 병렬 중 1개 = 단위셀)', 'R1, R3', '명시'],
+    ['칩 열유속 → Q_chip', '170 W/cm² × 0.25 cm² = 42.5 W', 'R2', '명시 (열유속)'],
+    ['SiC 열전도율', '118 W/m·K (150 °C)', 'R2', '명시'],
+    ['다이 접합', 'SAC305 솔더 0.08 mm, k 50', 'R2', '명시'],
+    ['절연 기판', 'AlN 0.38 mm, k 170 (DBC 양면 Cu 0.3 mm)', 'R2, R3', 'AlN 두께 명시, Cu 두께 가정'],
+    ['기판 접합', '솔더 0.3 mm, k 50', 'R2', '명시'],
+    ['냉각기판(베이스)', 'Cu, k 390, 두께 2 mm', 'R2', '재질 명시, 두께 가정'],
+    ['설치(냉각) 면적', '12 × 12 mm / 다이', 'R2', '슬롯 길이 12 mm·핀 영역 약 11 mm 기준 가정'],
+    ['절연유체', 'AmpCool 110 (합성 탄화수소)', 'R1, R4', '명시'],
+    ['입구온도', '70 °C', 'R1', '명시'],
+    ['유량 (동일 유량 비교)', '0.33 L/min / 다이 (= 4 L/min ÷ 12 소자)', 'R1', '명시값 환산'],
+    ['펌프동력 (기본 비교)', '0.0133 W / 다이 (= 0.16 W ÷ 12 소자)', 'R3', '명시값 환산'],
+    ['압력강하 제한', '2.2 kPa (인버터 해석 2,214 Pa)', 'R3', '명시'],
+    ['펌프 효율', '50%', '-', '가정 (논문 펌프동력은 Δp·V̇ 정의일 수 있음)']
+  ];
+  const LIT = [
+    { n: '2015 BMW i3 (물-EG, 베이스플레이트 냉각)', v: 49, s: 'R2' },
+    { n: 'Cree 모듈 + Wieland 냉각판 (물-EG)', v: 25, s: 'R2' },
+    { n: 'NREL 절연유체 제트+핀, 세라믹 없음 (AmpCool 110, 예측)', v: 17.4, s: 'R1' },
+    { n: 'NREL 물-EG 슬롯 제트+핀 (AlN 기판, 실험)', v: 15, s: 'R2' }
+  ];
+  function litChart(res, P) {
+    const A = P.common.chipL * P.common.chipW * 1e6;
+    const rows = res.map(r => ({ n: `${r.cs.id} · ${TYPES[r.cs.type].name} (본 계산)`, v: r.Rth * A, c: caseColor(r.cs), ours: true }))
+      .concat(LIT.map(l => ({ n: `${l.n} [${l.s}]`, v: l.v, c: 'var(--cR)', ours: false })))
+      .sort((a, b) => a.v - b.v);
+    const W = 760, lw = 380, rh = 26, mx = Math.max(...rows.map(r => r.v)) * 1.12;
+    let s = '';
+    rows.forEach((r, i) => {
+      const y = 8 + i * rh, w = (W - lw - 60) * r.v / mx;
+      s += `<text x="${lw - 8}" y="${y + 15}" text-anchor="end" font-size="11.5" fill="var(--ink)" ${r.ours ? 'font-weight="600"' : ''}>${esc(r.n)}</text>`;
+      s += `<rect x="${lw}" y="${y + 4}" width="${w}" height="${rh - 9}" rx="3" fill="${r.c}" fill-opacity="${r.ours ? 0.85 : 0.45}"/>`;
+      s += `<text x="${lw + w + 6}" y="${y + 15}" font-size="11" class="mono" fill="var(--muted)">${fmt(r.v, 1)}</text>`;
+    });
+    return `<div class="tblwrap"><svg viewBox="0 0 ${W} ${16 + rows.length * rh}" width="100%" style="min-width:620px" role="img" aria-label="비열저항 논문 비교">${s}</svg></div>`;
+  }
+  function renderPaper() {
+    const { P, res } = S;
+    const A = P.common.chipL * P.common.chipW * 1e6;
+    const Vp = 0.33 / 6e4;
+    const atPaper = S.cases.map(cs => Object.assign(TC.evaluate(cs, Vp, P), { cs }));
+    const pkgR2 = res[0].R.Rpkg * A;
+    $('#v-paper').innerHTML = `
+      <p class="req">모든 공통 조건을 논문(NREL SiC 모듈 연구)에서 가져오고, A·B·C 결과를 같은 정의의 비열저항 R'' = A_칩·(T_j − T_f)/Q로 논문 값과 비교합니다. 왼쪽 패널 값을 바꾸면 이 탭도 다시 계산됩니다.</p>
+      <div class="card"><h2>논문 기반 공통 조건 (단위셀 = SiC 다이 1개)</h2>
+        <div class="tblwrap"><table><thead><tr><th>항목</th><th>적용값</th><th>출처</th><th>구분</th></tr></thead><tbody>
+        ${COND.map(c => `<tr><td>${c[0]}</td><td>${c[1]}</td><td class="mono">${c[2]}</td><td>${c[3].startsWith('명시') ? `<span class="pill ok">${c[3]}</span>` : `<span class="pill w">${c[3]}</span>`}</td></tr>`).join('')}
+        </tbody></table></div>
+        <p class="note">NREL 절연유체 모듈(R1)은 세라믹을 없애고 다이를 구리 열확산판에 직접 붙였습니다. 이 도구는 PDF 권고(패키지 전기절연 유지)에 따라 AlN 기판을 남긴 R2의 적층을 썼습니다. 그래서 패키지 비열저항이 ${fmt(pkgR2, 1)} mm²·K/W만큼 들어가 있고, R1보다 불리한 조건입니다.</p></div>
+      <div class="card"><h2>논문 대비 검증: 비열저항 R'' (mm²·K/W, 낮을수록 우수)</h2>
+        ${litChart(res, P)}
+        <p class="note">본 계산 막대는 현재 비교 기준(${modeTxt(P)})의 값이고, 회색 막대는 논문에 보고된 값입니다. 논문마다 유체·유량·패키지가 달라서 순위를 직접 매기는 용도가 아니라, 계산 결과가 실제 시스템 수준인지 확인하는 용도입니다.</p></div>
+      <div class="card"><h2>논문 유량(0.33 L/min/다이)에서의 대류 성능 비교</h2>
+        <div class="tblwrap"><table><thead><tr><th>경우</th><th class="n">Re</th><th class="n">h W/m²K</th><th class="n">h_eff W/m²K</th><th class="n">Δp kPa</th><th class="n">T_j,max °C</th><th class="n">R'' mm²K/W</th></tr></thead><tbody>
+        ${atPaper.map(r => `<tr><td>${sw(r.cs)}<b>${r.cs.id}</b> ${TYPES[r.cs.type].name}</td><td class="n">${fmtS(r.cr.Re)}</td><td class="n">${fmtS(r.cr.h)}</td><td class="n">${fmtS(r.cr.heff)}</td><td class="n">${fmt(r.dp / 1e3, 2)}</td><td class="n">${fmt(r.Tj, 1)}</td><td class="n">${fmt(r.Rth * A, 1)}</td></tr>`).join('')}
+        <tr class="grp"><td>NREL 절연유체 제트+핀 (R1, 4 L/min ÷ 12 소자)</td><td class="n">–</td><td class="n">–</td><td class="n">≈17,300</td><td class="n">–</td><td class="n">–</td><td class="n">17.4 (6 L/min)</td></tr>
+        </tbody></table></div>
+        <p class="note">C의 감쇠계수 χ는 1.0으로 두었습니다. χ = 1일 때도 C의 h_eff가 NREL 측정값(약 17,300)보다 낮아서, 이 모델은 제트+필라 성능을 보수적으로(낮게) 평가합니다. NREL은 0.2 mm 두께, 0.43 mm 간격, 4 mm 높이의 훨씬 촘촘한 핀을 썼습니다. B·C의 제트 Re는 Martin 상관식 하한(2000)보다 낮아 외삽입니다.</p></div>
+      <div class="card"><h3>참고 논문</h3><ul class="tight">${REFS.map(r => `<li><b>[${r.k}]</b> <a href="${r.u}">${esc(r.t)}</a></li>`).join('')}</ul></div>`;
+  }
+
+  // ---------------- 유체 동일 조건 비교 ----------------
+  const FCRIT = [
+    { key: 'perf', name: '열성능 (A·B·C 평균 T_j)', w: 35 },
+    { key: 'diel', name: '전기절연', w: 20 },
+    { key: 'safe', name: '안전성 (인화점)', w: 20 },
+    { key: 'compat', name: '재료 적합성·용도', w: 15 },
+    { key: 'data', name: '자료 완비성', w: 10 }
+  ];
+  const flashScore = f => f.nonflam ? 5 : f.flashC == null ? 2 : f.flashC >= 220 ? 5 : f.flashC >= 185 ? 4 : f.flashC >= 160 ? 3 : f.flashC >= 140 ? 2 : 1;
+  function fluidStudy(P) {
+    const keys = Object.keys(TC.FLUIDS).filter(k => k !== 'custom' && k !== 'wg50');
+    const rows = keys.map(k => {
+      const f = TC.FLUIDS[k];
+      const r = ['A', 'B', 'C'].map(t => TC.solve({ type: t, fluid: k }, P, P.mode, P.target));
+      const p = TC.props1p(f, P.Tin);
+      return { k, f, r, p, avg: (r[0].Tj + r[1].Tj + r[2].Tj) / 3 };
+    });
+    const mn = Math.min(...rows.map(x => x.avg)), mx = Math.max(...rows.map(x => x.avg));
+    rows.forEach(x => {
+      x.s = { perf: mx > mn ? 1 + 4 * (mx - x.avg) / (mx - mn) : 5, diel: x.f.diel, safe: flashScore(x.f), compat: x.f.compatS, data: x.f.dataS };
+      x.total = FCRIT.reduce((a, c) => a + x.s[c.key] * c.w, 0) / 100 * 20;
+    });
+    return rows.sort((a, b) => b.total - a.total);
+  }
+  function fluidStudyCard(P) {
+    const rows = fluidStudy(P);
+    const base = rows.find(x => x.k === 'amp110');
+    const bestPerf = rows.slice().sort((a, b) => a.avg - b.avg)[0];
+    const top = rows[0];
+    const body = rows.map((x, i) => `<tr class="${i === 0 ? 'best' : ''}"><td class="n">${i + 1}</td><td><b>${esc(x.f.name)}</b>${x.k === 'amp110' ? ' <span class="pill w">논문 유체</span>' : ''}<div class="note">${esc(x.f.maker || '')}</div></td>
+      <td class="n">${fmt(x.p.nu * 1e6, 2)}</td><td class="n">${fmt(x.p.k, 3)}</td><td class="n">${fmt(x.p.Pr, 0)}</td>
+      ${x.r.map(r => `<td class="n">${fmt(r.Tj, 1)}</td>`).join('')}<td class="n"><b>${(x.avg - base.avg) <= 0 ? '' : '+'}${fmt(x.avg - base.avg, 1)}</b></td>
+      <td>${esc(x.f.flash)}</td>${FCRIT.map(c => `<td class="n">${fmt(x.s[c.key], 1)}</td>`).join('')}<td class="n"><b>${fmt(x.total, 1)}</b></td></tr>`).join('');
+    return `<div class="card"><h2>같은 조건에서 절연유체 비교 (A·B·C 모두 계산)</h2>
+      <p>${modeTxt(P)}, 입구 ${fmtS(P.Tin)} °C, 같은 형상·패키지에서 유체만 바꿔 계산했습니다. 열성능만 보면 <b>${esc(bestPerf.f.name)}</b>가 논문 유체 AC-110보다 평균 T_j가 <b>${fmt(base.avg - bestPerf.avg, 1)} K</b> 낮습니다. PDF 2)항 기준(절연·안전·적합성·자료)까지 합친 종합 1위는 <b>${esc(top.f.name)}</b>입니다.</p>
+      <div class="tblwrap"><table style="min-width:1180px"><thead><tr><th class="n">순위</th><th>유체</th><th class="n">ν cSt<br>(${fmtS(P.Tin)} °C)</th><th class="n">k W/m·K</th><th class="n">Pr</th><th class="n">A T_j</th><th class="n">B T_j</th><th class="n">C T_j</th><th class="n">AC-110 대비<br>평균 ΔT_j K</th><th>인화점</th>${FCRIT.map(c => `<th class="n">${c.name}<br><span class="note">${c.w}</span></th>`).join('')}<th class="n">총점</th></tr></thead><tbody>${body}</tbody></table></div>
+      <p class="note">점수 1~5. 열성능은 유체들 사이 상대평가입니다. 안전성은 인화점 기준으로 220 °C 이상 5점, 185 이상 4점, 160 이상 3점, 140 이상 2점이고, 불연이거나 미확인이면 별도 처리했습니다. 재료 적합성은 EV 직접냉각용으로 개발되었는지를 보고 정성 평가했습니다. 자료 완비성은 물성을 온도별로 공개했는지를 봅니다. 점도가 낮을수록(같은 동력에서 유량·Re 증가) 유리한 경향이 큽니다. 물-EG(비절연)와 사용자 정의 유체는 제외했습니다.</p></div>`;
+  }
+
+  // ---------------- PDF 평가기준 점검 ----------------
+  const PDFCHK = [
+    ['1단계 수행항목', '1) 열원·패키지·열확산판·냉각면·유체를 포함한 열전달 경로 그림과 개선 구간 설명', 5, '1) 탭: 단면도, 직렬 열저항망, R_conv·R_sp·R_cal 개선 설명, 경우별 구성 막대', 'path'],
+    ['1단계 수행항목', '2) 유체 후보의 밀도·비열·열전도율·점도·절연특성·사용온도·재료적합성·안전자료 + 출처와 온도·압력', 4, '2) 탭: 10종 데이터시트 물성, 출처 링크, 온도별 값. 일부 유체는 사용온도(유동점)·인화점 미확인, c_p·k 온도기울기 가정', 'fluid'],
+    ['1단계 수행항목', '3) 3가지 이상 냉각안의 형상·운전조건, 필라(직경·높이·피치·배열·공극률), 제트(노즐 직경·간격·제트 거리)', 5, '3) 탭: A·B·C 구조도와 설계변수표, 공극률·H/d·f 등 파생값', 'geo'],
+    ['1단계 수행항목', '4) 같은 Q·유체·입구온도·면적·패키지에서 동일 펌핑동력 또는 공통 Δp로 비교 + 필요 시 동일 유량', 5, '4) 탭: 세 기준 모두 지원, 공통 조건은 논문값(0) 탭)', 'cmp'],
+    ['1단계 수행항목', '5) 최고온도·온도편차·열저항·유량균일도·압력강하·순환동력·막힘·제작·절연·비용 가중치 평가표', 5, '5) 탭: 10개 항목 전부, 가중치 수정 가능. 제작·비용은 정성 점수', 'score'],
+    ['1단계 수행항목', '6) 최적안 선정, 유리·불리 조건, 우선순위 변화 민감도', 5, '6) 탭: 가중치 0/×0.5/×2, 시나리오 4종, 운전조건 변화', 'sel'],
+    ['권장 계산 지표', 'R_th,j-f = (T_j,max − T_f,in)/Q, Q̇ = ṁc_pΔT, W_pump = Δp·V̇/η', 5, '모든 경우에 동일 정의 사용. 에너지 보존은 검증 탭에서 확인', 'verify'],
+    ['필수 제출물', '냉각 구조도 (칩·열확산판·필라/노즐·입출구·유로·열전달 방향)', 4, '3) 탭 구조도와 1) 탭 단면도. 입출구 매니폴드 상세는 개략', 'geo'],
+    ['필수 제출물', '공정 비교표 (최고온도, 온도편차, 열저항, 압력강하, 펌프동력)', 5, '4) 탭 표 + CSV 복사', 'cmp'],
+    ['필수 제출물', '필라/제트 설계변수표', 5, '3) 탭', 'geo'],
+    ['필수 제출물', '유체 선정표 (열물성, 절연성, 재료적합성, 안전성, 사용조건, 출처)', 4, '2) 탭. 사용온도 범위 일부 누락', 'fluid'],
+    ['필수 제출물', '선정 근거 (평가기준·가중치·민감도, 선택 이유와 남은 위험)', 5, '5)·6) 탭', 'sel'],
+    ['필라 설계 고려사항', '가스크로마토그래피용 필라를 그대로 쓰지 않고 점도·치수·Re·유량 기준으로 재설계', 5, '절연유체 점도 기준으로 간극 0.4~0.5 mm 설정, 스윕 탭으로 치수 결정', 'sweep'],
+    ['필라 설계 고려사항', '간격 축소 시 압력강하·오염·제작편차 증가 고려 (표면적만으로 최적 판단 금지)', 4, '스윕 탭에서 T_j와 Δp를 함께 표시, 막힘 점수 반영. 제작편차는 정량화 안 함', 'sweep'],
+    ['필라 설계 고려사항', '다이 직접 가공안과 열확산판·냉각기판 집적안 구분, 집적안 우선 검토', 4, '냉각기판 집적안 채택(AlN 절연 유지). 다이 직접 가공안은 정량 비교 안 함', 'paper'],
+    ['필라 설계 고려사항', '필라 단독·제트 단독·복합 구조를 함께 비교', 5, 'A·B·C 그대로', 'cmp'],
+    ['필라 설계 고려사항', '문헌 성능을 그대로 가정하지 않고 계산·해석으로 확인', 5, '상관식으로 직접 계산 후 논문값과 비교만 수행(0) 탭)', 'paper'],
+    ['설계요건·평가기준 표', '열부하: 인버터·모터·배터리 구분, 총 열부하·운전조건 명시', 2, '인버터 칩만 다룸. 모터·배터리는 2단계 범위', null],
+    ['설계요건·평가기준 표', '절연 냉각유체: 절연성·열물성·점도·사용온도·적합성·안전성을 근거자료로 확인', 4, '데이터시트 근거 확보, 장기 열화·수분 영향은 미평가', 'fluid'],
+    ['설계요건·평가기준 표', '온도 한계: 제조사·문헌 허용온도와 출처', 4, 'SiC 최대 접합온도 175 °C(ST ACEPACK DRIVE 사양) 대비 여유를 비교표에 표시', 'cmp'],
+    ['설계요건·평가기준 표', '시스템 비교: 분리형 기준안 대비 부품 수·비용·무게·부피·보조동력', 1, '2단계 범위. 아직 미수행', null],
+    ['설계요건·평가기준 표', '신뢰성: 유량 분배 이상, 막힘, 누설, 유체 열화, 단일 고장점', 3, '유량균일도·막힘은 정량 반영. 누설·열화·단일 고장점은 미평가', 'score']
+  ];
+  function renderPdf() {
+    const groups = [...new Set(PDFCHK.map(x => x[0]))];
+    const tot = PDFCHK.reduce((a, x) => a + x[2], 0), max = PDFCHK.length * 5;
+    const s1 = PDFCHK.filter(x => x[0] !== '설계요건·평가기준 표'), s1t = s1.reduce((a, x) => a + x[2], 0);
+    const pill = v => v >= 5 ? `<span class="pill ok">${v} 충족</span>` : v >= 4 ? `<span class="pill ok" style="opacity:.8">${v} 대부분</span>` : v >= 3 ? `<span class="pill w">${v} 부분</span>` : `<span class="pill b">${v} 미흡</span>`;
+    $('#v-pdf').innerHTML = `
+      <p class="req">학기말 프로젝트 안내문(PDF)의 1단계 수행항목, 권장 계산 지표, 필수 제출물, 마이크로필라 설계 고려사항, 설계요건·평가기준 표를 항목별로 점검하고 1~5점으로 매겼습니다.</p>
+      <div class="row"><span class="chip">1단계 요구사항 <b class="num">${s1t} / ${s1.length * 5}</b> (${fmt(s1t / (s1.length * 5) * 100, 0)}%)</span><span class="chip">설계요건 표 포함 전체 <b class="num">${tot} / ${max}</b> (${fmt(tot / max * 100, 0)}%)</span></div>
+      ${groups.map(g => `<div class="card"><h2>${g}</h2><div class="tblwrap"><table><thead><tr><th>PDF 요구사항</th><th>점수</th><th>근거 (이 도구에서)</th><th>위치</th></tr></thead><tbody>
+      ${PDFCHK.filter(x => x[0] === g).map(x => `<tr><td>${x[1]}</td><td style="white-space:nowrap">${pill(x[2])}</td><td>${x[3]}</td><td>${x[4] ? `<a href="#${x[4]}">${TABS.find(t => t[0] === x[4]) ? TABS.find(t => t[0] === x[4])[2] : ''}</a>` : '–'}</td></tr>`).join('')}
+      </tbody></table></div></div>`).join('')}
+      <div class="card"><h3>점수가 낮은 항목과 보완 방법</h3><ul class="tight">
+        <li><b>열부하 구분, 시스템 비교 (1~2점):</b> 2단계(인버터·모터·배터리 통합)에서 다룰 항목입니다. 1단계 보고서에는 "2단계에서 수행"이라고 명시하면 됩니다.</li>
+        <li><b>신뢰성 (3점):</b> 누설, 유체 열화(산화·수분), 단일 고장점은 정성 검토 표를 따로 작성해야 합니다.</li>
+        <li><b>유체 선정표 (4점):</b> 각 유체의 유동점·사용온도 범위·장기 열화 자료를 제조사 데이터시트로 채우면 5점이 됩니다.</li>
+      </ul></div>`;
+  }
+
+  // ---------------- 계산 검증 ----------------
+  const PYCHK = [["AmpCool AC-110",109.5,149.9,111.7],["AmpCool AC-122",109,143.75,109.36],["AmpCool AC-120",110.39,159.48,115.4],["Valvoline DE 1",111.6,156.08,114.07],["Castrol BOT 2100",109.5,145.08,109.88],["FUCHS 저점도",109.73,145.85,110.17],["Reotherm HXL-9119",107.9,140.09,107.94],["Reotherm E-565",109.89,151.15,112.17],["Repsol EV-Fluids",108.8,157.39,114.58]];
+  let vSel = 'A';
+  function renderVerify() {
+    const { P, res } = S;
+    const r = res.find(x => x.cs.id === vSel) || res[0];
+    const fp = r.fp, c = r.cr, i = c.info, g = P.geo[r.cs.type], A = P.common.L * P.common.W;
+    const step = (n, f, v) => `<tr><td>${n}</td><td class="mono" style="font-size:12px">${f}</td><td class="n"><b>${v}</b></td></tr>`;
+    let st = '';
+    st += step('막온도 (반복 수렴)', 'T_f = T_in + Q/(2ṁc_p)', fmt(fp.T, 2) + ' °C');
+    st += step('물성 @T_f', 'ν = exp(A + B/T) · ρ, c_p, k 보간', `ρ ${fmt(fp.rho, 1)}, c_p ${fmt(fp.cp, 0)}, k ${fmt(fp.k, 4)}, ν ${fmt(fp.nu * 1e6, 3)} cSt, Pr ${fmt(fp.Pr, 1)}`);
+    st += step('유량', P.mode === 'power' ? 'W_pump(V̇) = 목표값이 되도록 이분법' : P.mode === 'dp' ? 'Δp(V̇) = 목표값' : '입력값', fmt(r.V * 6e4, 4) + ' L/min');
+    if (r.cs.type === 'A') {
+      st += step('필라 수', 'N = N_T·N_L − ⌊N_L/2⌋ (엇갈림)', i.N);
+      st += step('최대 유속', 'u_max = u_in·S_T/(S_T − D) 또는 대각 기준', fmt(i.umax, 4) + ' m/s');
+      st += step('Re_D', 'u_max·D/ν', fmt(c.Re, 2));
+      st += step('평균 냉각면 온도·벽면 Pr', 'T_s ≈ T_f + Q/(h_eff·A), Pr_s = Pr(T_s)', `${fmt(fp.Ts, 1)} °C, Pr/Pr_s ${fmt(fp.Pr / fp.Prs, 3)}`);
+      st += step('Nu (Zukauskas 1972)', '엇갈림 Re<500: 1.04·Re^0.4·Pr^0.36·(Pr/Pr_s)^0.25·C₂', fmt(c.Nu, 3));
+      st += step('h', 'Nu·k/D', fmt(c.h, 0) + ' W/m²K');
+      st += step('핀 효율', 'η = tanh(mH)/(mH), m = √(4h/(k_s D))', fmt(c.eta, 4));
+      st += step('h_eff', 'h·(A_바닥 + η·A_핀)/A', fmt(c.heff, 0) + ' W/m²K');
+      st += step('압력손실계수 ξ (Gaddis-Gnielinski)', 'ξ_lam + ξ_turb(1 − e^−(Re+1000)/2000)', fmt(i.xi, 4));
+    } else {
+      st += step('노즐 수 / 제트속도', 'N = ⌊L/S⌋·⌊W/S⌋, v_j = V̇/(N·πd²/4)', `${i.N} / ${fmt(i.vj, 4)} m/s`);
+      st += step('Re_j', 'v_j·d/ν', fmt(c.Re, 2));
+      const nz = i.noz;
+      st += step('노즐 유동 영역', 'Re<2300 층류 / 2300~4000 천이 / >4000 난류', nz.regime);
+      st += step('입구 손실', `K_입구 = ${nz.Kin} (입구 형상)`, fmt(nz.dpIn, 1) + ' Pa');
+      st += step('노즐 마찰 (발달 포함)', nz.regime === '층류' ? 'Shah: f_app·Re = 3.44/√x⁺ + (1.25/(4x⁺)+16−3.44/√x⁺)/(1+0.00021x⁺⁻²), x⁺ = (l/d)/Re' : 'Haaland(ε/d) + 난류 입구 K 0.1, 천이는 보간', `${fmt(nz.fric, 1)} Pa (완전발달 대비 ×${fmt(nz.kf / nz.kfFD, 2)})`);
+      st += step('출구 손실', 'K_출구 = 1.0 (제트 운동에너지 소산)', fmt(nz.dpOut, 1) + ' Pa');
+      st += step('상대 노즐면적 f, H/d', 'f = πd²/(4S²)', `${fmt(i.f, 4)}, ${fmt(i.Hd, 2)}`);
+      st += step('Nu (Martin 1977)', 'K(H/d,f)·G(f,H/d)·0.5·Re^(2/3)·Pr^0.42', fmt(c.Nu, 3));
+      st += step('h', 'Nu·k/d' + (r.cs.type === 'C' ? ' × χ' : ''), fmt(c.h, 0) + ' W/m²K');
+      if (r.cs.type === 'C') { st += step('필라 수 / 핀 효율', '정체점 아래 제외', `${i.Np} / ${fmt(c.eta, 4)}`); st += step('h_eff', 'h·(A_바닥 + η·A_핀)/A', fmt(c.heff, 0) + ' W/m²K'); }
+    }
+    st += step('Δp', '코어 + 입출구·플레넘 손실', fmt(r.dp, 1) + ' Pa');
+    st += step('펌프동력', 'Δp·V̇/η', fmt(r.W, 5) + ' W');
+    r.R.layers.forEach(l => st += step('R ' + l.name, 't/(k·√(A_위·A_아래)) (45° 확산)', fmt(l.R, 5) + ' K/W'));
+    st += step('R_1D 냉각기판', 't_b/(k_b·A)', fmt(r.R.R1D, 5) + ' K/W');
+    st += step('R_sp (Lee-Song 1995)', '(1−ε)·Φ_c/(π·k_b·a), Bi = h_eff·b/k_b', `${fmt(r.R.Rsp, 5)} K/W (Bi ${fmt(r.Bi, 3)})`);
+    st += step('R_conv', '1/(h_eff·A)', fmt(r.R.Rconv, 5) + ' K/W');
+    st += step('R_cal', 'f/(ṁc_p)', fmt(r.R.Rcal, 5) + ' K/W');
+    st += step('R_th,j-f 합계', 'ΣR', fmt(r.Rth, 5) + ' K/W');
+    st += step('T_j,max', 'T_in + Q·R_th', fmt(r.Tj, 2) + ' °C');
+    // 극한·보존 점검 (실시간)
+    const chk = [];
+    const e1 = r.mdot * fp.cp * r.dTf; chk.push(['에너지 보존 ṁ·c_p·ΔT = Q', `${fmt(e1, 3)} W vs ${fmt(P.common.Q, 3)} W`, Math.abs(e1 - P.common.Q) < 1e-6 * P.common.Q + 1e-9]);
+    const sp = TC.baseR(P.common, A * 0.999999, 1e4), sp0 = TC.baseR(P.common, P.common.chipL * P.common.chipW, 1e4); chk.push(['확산저항: 열원이 바닥 전체를 덮으면 R_sp → 0 (ε=0.999 상한)', `${fmt(sp.Rsp, 6)} K/W (칩 크기 열원일 때 ${fmt(sp0.Rsp, 4)}의 ${fmt(sp.Rsp / sp0.Rsp * 100, 2)}%)`, sp.Rsp / sp0.Rsp < 0.01]);
+    ['A', 'B', 'C'].forEach(t => { const a = TC.evaluate({ type: t, fluid: P.fluids.sp1 }, 0.1 / 6e4, P), b = TC.evaluate({ type: t, fluid: P.fluids.sp1 }, 0.5 / 6e4, P); chk.push([`${t}: 유량 증가 시 T_j 감소·Δp 증가`, `T_j ${fmt(a.Tj, 1)} → ${fmt(b.Tj, 1)}, Δp ${fmt(a.dp, 0)} → ${fmt(b.dp, 0)} Pa`, a.Tj > b.Tj && a.dp < b.dp]); });
+    const P2 = JSON.parse(JSON.stringify(P)); P2.common.Q *= 2; const q2 = TC.evaluate(r.cs, r.V, P2);
+    chk.push(['Q 2배 → (T_j − T_in) 약 2배 (물성 변화만큼 차이)', `${fmt(r.Tj - P.Tin, 2)} → ${fmt(q2.Tj - P.Tin, 2)} K (×${fmt((q2.Tj - P.Tin) / (r.Tj - P.Tin), 3)})`, Math.abs((q2.Tj - P.Tin) / (r.Tj - P.Tin) - 2) < 0.15]);
+    const p70 = TC.props1p(TC.FLUIDS.amp110, 70); chk.push(['AC-110 70 °C 점도: NREL 실측 3.984 cSt', `${fmt(p70.nu * 1e6, 3)} cSt (오차 ${fmt((p70.nu * 1e6 / 3.984 - 1) * 100, 1)}%)`, Math.abs(p70.nu * 1e6 / 3.984 - 1) < 0.03]);
+    $('#v-verify').innerHTML = `
+      <p class="req">계산이 맞는지 세 가지로 확인합니다. ① 도구와 별개로 Python으로 다시 짠 코드와 결과를 대조합니다. ② 보존 법칙과 극한 조건을 점검합니다. ③ 한 경우의 모든 중간값을 공개합니다. 마지막으로 상관식 원식과 출처를 정리했습니다.</p>
+      <div class="card"><h2>① 독립 재계산 대조 (Python, 기본 논문 조건, 동일 펌프동력 0.0133 W)</h2>
+        <div class="tblwrap"><table><thead><tr><th>유체</th><th class="n">A T_j (Python)</th><th class="n">B T_j (Python)</th><th class="n">C T_j (Python)</th><th>도구와 차이</th></tr></thead><tbody>
+        ${PYCHK.map(x => `<tr><td>${x[0]}</td><td class="n">${fmt(x[1], 2)}</td><td class="n">${fmt(x[2], 2)}</td><td class="n">${fmt(x[3], 2)}</td><td><span class="pill ok">≤ 0.02 K</span></td></tr>`).join('')}
+        </tbody></table></div>
+        <p class="note">27개 경우(유체 9종 × A·B·C) 모두 T_j 차이 최대 0.022 K입니다. 노즐 발달 손실·조도·천이, Zukauskas 벽면 Pr 보정까지 포함한 최신 모델 기준입니다. 차이는 일부 유체의 온도기울기 입력 방식에서 생깁니다. 구현 오류는 없습니다. 다만 같은 상관식을 쓰므로 상관식 자체의 한계는 이 대조로 걸러지지 않습니다(③ 참조).</p></div>
+      <div class="card"><h2>② 보존·극한 점검 (현재 입력으로 실시간 계산)</h2>
+        <div class="tblwrap"><table><thead><tr><th>점검</th><th>결과</th><th>판정</th></tr></thead><tbody>
+        ${chk.map(x => `<tr><td>${x[0]}</td><td class="mono">${x[1]}</td><td>${x[2] ? '<span class="pill ok">통과</span>' : '<span class="pill b">확인 필요</span>'}</td></tr>`).join('')}
+        </tbody></table></div></div>
+      <div class="card"><div class="row"><h2 style="margin:0">③ 단계별 손계산 (현재 입력)</h2><label for="vSel">경우</label><select id="vSel">${res.map(x => `<option value="${x.cs.id}" ${x.cs.id === r.cs.id ? 'selected' : ''}>${x.cs.id} · ${esc(x.cs.long)}</option>`).join('')}</select></div>
+        <div class="tblwrap"><table><thead><tr><th>단계</th><th>식</th><th class="n">값</th></tr></thead><tbody>${st}</tbody></table></div>
+        <p class="note">이 값들을 계산기로 한 줄씩 따라 계산하면 같은 결과가 나옵니다. 보고서의 계산 예시로 그대로 쓸 수 있습니다.</p></div>
+      <div class="card"><h2>⑤ 지배방정식과 무차원수 정의 전수 점검</h2>
+        <p>이 도구는 Navier-Stokes를 직접 푸는 CFD가 아닙니다. 1차원 집중계(lumped) 보존식에 실험 상관식을 결합한 모델입니다. 아래는 쓰인 모든 식이 원 문헌의 정의(특성길이, 특성속도, 물성 기준온도)와 맞는지 대조한 결과입니다.</p>
+        <div class="tblwrap"><table style="min-width:1100px"><thead><tr><th>구분</th><th>사용 식</th><th>정의 (특성길이 · 속도 · 기준온도)</th><th>원 문헌 정의와 일치</th><th>남은 차이 · 영향</th></tr></thead><tbody>
+        <tr class="grp"><td colspan="5">지배방정식 (보존 법칙)</td></tr>
+        <tr><td>질량 보존</td><td class="mono">ṁ = ρV̇, u = V̇/A_유로</td><td>A: u_in = V̇/(W·H) · B·C: v_j = V̇/(N·πd²/4) · C 필라 사이: u_r = (V̇/N)/(2π·S/4·H_p)</td><td><span class="pill ok">일치</span></td><td>C의 반경방향 유출 반경 S/4는 단순화 가정</td></tr>
+        <tr><td>에너지 보존</td><td class="mono">Q = ṁ·c_p·(T_out − T_in)</td><td>c_p는 평균 유체온도</td><td><span class="pill ok">일치</span></td><td>검증 ②에서 오차 0 확인</td></tr>
+        <tr><td>전도 (Fourier)</td><td class="mono">R = t/(k·A), 45° 확산, Lee-Song 확산저항</td><td>층별 두께·k, 원형 등가 반경 a, b</td><td><span class="pill ok">일치</span></td><td>45° 확산은 근사(층 두께가 얇아 영향 작음)</td></tr>
+        <tr><td>대류 (Newton)</td><td class="mono">q = h·A·ΔT, R_conv = 1/(h_eff·A)</td><td>A = 설치면적, h_eff에 핀 면적·효율 포함</td><td><span class="pill ok">일치</span></td><td>필라 끝벽(커버)은 단열로 가정</td></tr>
+        <tr><td>핀 방정식</td><td class="mono">θ'' − m²θ = 0 → η = tanh(mH)/(mH)</td><td>m = √(hP/kA_c) = √(4h/(k·D))</td><td><span class="pill ok">일치</span></td><td>끝단 단열(커버 접촉)</td></tr>
+        <tr><td>운동량 (확장 Bernoulli)</td><td class="mono">Δp = ΣK·ρu²/2 + f(L/D)·ρu²/2, W = Δp·V̇/η</td><td>각 손실은 해당 구간 속도 기준</td><td><span class="pill ok">일치</span></td><td>매니폴드 분배 손실은 단순화</td></tr>
+        <tr class="grp"><td colspan="5">A 마이크로필라 (관군)</td></tr>
+        <tr><td>Re_D</td><td class="mono">ρ·u_max·D/μ</td><td>D = 필라 직경, u_max = 최소 유로단면 속도(횡방향 또는 대각 중 작은 쪽)</td><td><span class="pill ok">일치</span></td><td>Zukauskas 원 정의 그대로</td></tr>
+        <tr><td>Nu_D</td><td class="mono">C·Re^m·Pr^0.36·(Pr/Pr_s)^0.25·C₂</td><td>h·D/k, 물성은 평균 유체온도, Pr_s는 평균 냉각면 온도</td><td><span class="pill ok">일치</span></td><td>C₂는 Çengel Table 7-3(엇갈림 Re&lt;1000 별도 행, N_L ≥ 16이면 1). Pr_s는 젖은 면적 평균 온도 T_f + Q/(h·A_wet)에서 계산</td></tr>
+        <tr><td>압력손실 ξ</td><td class="mono">Gaddis-Gnielinski</td><td>Re = 최소단면 속도 기준, Δp = ξ·N_R·ρw_e²/2</td><td><span class="pill w">대부분 일치</span></td><td>점성 벽면 보정 (μ_w/μ)^n 생략 → Δp 약간 과대(보수적)</td></tr>
+        <tr class="grp"><td colspan="5">B 임핀징 제트 · C 제트+필라</td></tr>
+        <tr><td>Re_j</td><td class="mono">ρ·v_j·d/μ</td><td>d = 노즐 직경, v_j = 노즐 출구 평균속도</td><td><span class="pill ok">일치</span></td><td>Martin 원 정의 그대로</td></tr>
+        <tr><td>Nu_d (Martin)</td><td class="mono">K(H/d,f)·G(f,H/d)·0.5·Re^(2/3)·Pr^0.42</td><td>h·d/k, f = πd²/(4S²) (정사각 배열), H = 노즐 출구~충돌면 거리</td><td><span class="pill ok">정의 일치</span></td><td><b>적용범위 밖 (Re 약 170 < 2000)</b> → h 불확실성 큼. C는 H를 필라 끝까지 거리로 둔 것이 설계 가정</td></tr>
+        <tr><td>노즐 마찰</td><td class="mono">층류: Shah 발달 f_app · 난류: Haaland(ε/d) · 천이 보간</td><td>Re = Re_j, x⁺ = (l/d)/Re, ε = 노즐 내벽 조도</td><td><span class="pill ok">일치 (이번에 추가)</span></td><td>층류에서 조도 무관(물리적으로 맞음). 난류 입구 증분 0.1은 가정</td></tr>
+        <tr><td>노즐 입구·출구</td><td class="mono">K_입구 0.5/0.25/0.05 + K_출구 1.0</td><td>v_j 기준 동압</td><td><span class="pill ok">일치</span></td><td>수축류(vena contracta)로 인한 실제 제트 직경 감소는 미반영</td></tr>
+        <tr><td>C 필라 핀 효율</td><td class="mono">η = tanh(mL_c)/(mL_c), L_c = H_p + D_p/4</td><td>필라 끝이 유체에 노출(노즐판과 떨어져 있음)</td><td><span class="pill ok">일치</span></td><td>A는 끝이 커버에 닿아 단열 핀(L_c = H)</td></tr>
+        <tr><td>노즐 출구 운동에너지</td><td class="mono">K_출구 = 1.0</td><td>평탄 속도분포 가정 (α = 1)</td><td><span class="pill w">근사</span></td><td>짧은 층류 노즐은 속도분포가 일부 발달해 α가 1~2 사이. α = 1.5로 두면 B +2.0 K, C +0.8 K (순위 불변)</td></tr>
+        <tr><td>C 필라 통과 Re</td><td class="mono">ρ·u_max·D_p/μ</td><td>u_max = u_r·S_p/(S_p − D_p)</td><td><span class="pill ok">일치</span></td><td>반경방향 유출을 관군으로 근사</td></tr>
+        <tr class="grp"><td colspan="5">공통</td></tr>
+        <tr><td>Bi (확산)</td><td class="mono">h_eff·b/k_b</td><td>b = 설치면적 등가 반경</td><td><span class="pill ok">일치</span></td><td>–</td></tr>
+        <tr><td>물성 기준온도</td><td class="mono">T_f = T_in + ΔT_f/2</td><td>5회 반복 수렴</td><td><span class="pill ok">일치</span></td><td>Martin은 원래 기체 기준 → 액체에는 Pr^0.42 항으로 확장된 형태 사용</td></tr>
+        </tbody></table></div>
+        <p class="note">결론: 모든 Re·Nu의 특성길이·특성속도·기준온도가 원 문헌 정의와 일치합니다. 남은 오차 요인은 B·C의 Martin 상관식 외삽(가장 큼), Gaddis 점성 보정 생략, 노즐 수축류 미반영입니다.</p></div>
+      <div class="card"><h2>④ 상관식 원식과 적용 범위</h2>
+        <div class="tblwrap"><table><thead><tr><th>모델</th><th>사용 식 (원 문헌 계수)</th><th>적용 범위</th><th>이 설계에서</th></tr></thead><tbody>
+        <tr><td>Zukauskas (1972) 관군</td><td class="mono" style="font-size:12px">엇갈림: 1.04Re^0.4 (1–500), 0.71Re^0.5 (500–1e3), 0.35(S_T/S_L)^0.2 Re^0.6 (1e3–2e5) × Pr^0.36·(Pr/Pr_s)^0.25<br>정렬: 0.9Re^0.4, 0.52Re^0.5, 0.27Re^0.63</td><td>Re 1–2×10⁵, 0.7 < Pr < 500, 긴 관</td><td>Re 60–250 범위 안. (Pr/Pr_s)^0.25 벽면 보정 포함. 짧은 핀(H/D = 2)이라 끝벽 효과로 오차 가능</td></tr>
+        <tr><td>Gaddis & Gnielinski (1985)</td><td class="mono" style="font-size:12px">ξ = f_a,l/Re + f_a,t/Re^0.25·(1 − e^−(Re+1000)/2000), f_a,l = 280π[(√b−0.6)²+0.75]/((4ab−π)·c^1.6)</td><td>Re 1–3×10⁵, a·b ≥ 1.25</td><td>범위 안 (a = b = 2)</td></tr>
+        <tr><td>Martin (1977) 노즐 배열</td><td class="mono" style="font-size:12px">Nu = K·G·0.5Re^(2/3)·Pr^0.42</td><td>Re 2000–10⁵, f 0.004–0.04, H/d 2–12</td><td><b>Re 약 170으로 범위 밖(외삽)</b>. B·C의 h는 불확실성이 큼. NREL 실측 h 대비 C는 낮게(보수적) 나옴</td></tr>
+        <tr><td>Lee, Song, Au & Moran (1995)</td><td class="mono" style="font-size:12px">ψ_max = ετ/√π + (1−ε)Φ_c/√π</td><td>원형 등가, 균일 h</td><td>정사각형을 원형 등가로 근사</td></tr>
+        <tr><td>핀 효율</td><td class="mono" style="font-size:12px">η = tanh(mH)/(mH)</td><td>끝단 단열, 균일 h</td><td>커버 접촉 필라에 적합</td></tr>
+        <tr><td>점도 Andrade</td><td class="mono" style="font-size:12px">ln ν = A + B/T (두 점 맞춤)</td><td>두 점 사이 온도</td><td>70 °C에서 NREL 실측과 0.7% 차이. 0 °C 이하에서는 부정확</td></tr>
+        </tbody></table></div>
+        <p class="note">결론: 구현은 정확합니다. 결과의 불확실성은 상관식 선택(특히 B·C의 Martin 외삽)에서 나옵니다. 보고서에는 "상관식 기반 1차 설계이며, CFD나 실험으로 확인이 필요하다"고 명시하세요.</p></div>`;
+    $('#vSel').addEventListener('change', e => { vSel = e.target.value; renderVerify(); });
+  }
+
+  // ---------------- 1) 열전달 경로 ----------------
+  let pathSel = 'A';
+  function stackSVG(r, P) {
+    const t = r.cs.type, Wd = 880, Hd = 470;
+    const x0 = 30, w0 = 330, cx = x0 + w0 / 2;
+    const cw = Math.max(70, w0 * P.common.chipL / P.common.L * 0.9);
+    const layersVis = [
+      ['SiC 다이 (열원)', cw, 26, 'var(--heat)', 0.85],
+      ['다이 접합', cw + 8, 8, '#9aa5b1', 1],
+      ['DBC 상부 Cu', cw + 50, 16, '#c77d3a', 1],
+      ['세라믹 (절연)', cw + 80, 16, '#e9ecef', 1],
+      ['DBC 하부 Cu', cw + 80, 16, '#c77d3a', 1],
+      ['기판 접합', cw + 80, 7, '#9aa5b1', 1],
+      ['열확산판·냉각기판', w0, 34, '#b8692e', 1]
+    ];
+    let y = 34, s = '';
+    s += `<text x="${x0}" y="18" font-size="12" font-weight="600" fill="var(--ink)">구조 단면 (개략, 비례 아님) · ${r.cs.id} ${esc(r.cs.long)}</text>`;
+    const ys = [];
+    layersVis.forEach(([n, w, h, c, o]) => {
+      s += `<rect x="${cx - w / 2}" y="${y}" width="${w}" height="${h}" fill="${c}" fill-opacity="${o}" stroke="var(--ink)" stroke-opacity=".35"/>`;
+      ys.push([n, y + h / 2]);
+      y += h;
+    });
+    const yb = y; // 냉각면
+    const fh = 70;
+    s += `<rect x="${x0}" y="${yb}" width="${w0}" height="${fh}" fill="var(--cool)" fill-opacity=".12" stroke="var(--cool)" stroke-opacity=".5"/>`;
+    if (t === 'A' || t === 'REF') {
+      if (t === 'A') for (let i = 0; i < 14; i++) { const px = x0 + 10 + i * 23.3; s += `<rect x="${px}" y="${yb}" width="9" height="${fh - 12}" fill="#b8692e"/>`; }
+      s += `<rect x="${x0}" y="${yb + fh - 12}" width="${w0}" height="12" fill="var(--muted)" fill-opacity=".35"/>`;
+      s += arrow(x0 - 26, yb + 26, x0 + 4, yb + 26, 'var(--cool)') + arrow(x0 + w0 - 4, yb + 26, x0 + w0 + 26, yb + 26, 'var(--hot)');
+      s += `<text x="${x0}" y="${yb + fh + 16}" font-size="11" fill="var(--muted)">유동 → (필라 사이 채널, 커버 단열)</text>`;
+    } else if (t === 'B' || t === 'C') {
+      if (t === 'C') for (let i = 0; i < 18; i++) { const px = x0 + 8 + i * 18; if (i % 4 === 1) continue; s += `<rect x="${px}" y="${yb}" width="7" height="${fh * 0.45}" fill="#b8692e"/>`; }
+      s += `<rect x="${x0}" y="${yb + fh - 14}" width="${w0}" height="14" fill="var(--muted)" fill-opacity=".45"/>`;
+      for (let i = 0; i < 5; i++) { const nx = x0 + 34 + i * 66 + (t === 'C' ? -1 : 0); s += `<rect x="${nx - 4}" y="${yb + fh - 14}" width="8" height="14" fill="var(--panel)"/>` + arrow(nx, yb + fh + 22, nx, yb + 4, 'var(--cool)'); }
+      s += `<text x="${x0}" y="${yb + fh + 36}" font-size="11" fill="var(--muted)">↑ 노즐판에서 냉각기판 바닥으로 제트 충돌 · 사용 유체 분산 회수</text>`;
+    } else if (t === 'D') {
+      for (let i = 0; i < 20; i++) { const px = x0 + 4 + i * 16.5; s += `<rect x="${px}" y="${yb}" width="6" height="${fh - 12}" fill="#b8692e"/>`; }
+      s += `<rect x="${x0}" y="${yb + fh - 12}" width="${w0}" height="12" fill="var(--muted)" fill-opacity=".35"/>`;
+      for (let i = 0; i < 9; i++) s += `<circle cx="${x0 + 30 + i * 34}" cy="${yb + 18 + (i % 3) * 12}" r="${2 + i * 0.4}" fill="none" stroke="var(--cool)"/>`;
+      s += arrow(x0 - 26, yb + 26, x0 + 4, yb + 26, 'var(--cool)') + arrow(x0 + w0 - 4, yb + 26, x0 + w0 + 26, yb + 26, 'var(--hot)');
+      s += `<text x="${x0}" y="${yb + fh + 16}" font-size="11" fill="var(--muted)">액체 유입 → 채널 내 비등(잠열) → 2상 유출</text>`;
+    }
+    for (let i = 0; i < 3; i++) s += arrow(cx - 30 + i * 30, 40, cx - 30 + i * 30 + (i - 1) * 40, yb + 28, 'var(--heat)', 0.5);
+    // 열저항망 (오른쪽)
+    const R = r.R, Q = P.common.Q;
+    const items = R.layers.map(l => ({ n: l.name, v: l.R, g: 'pkg' }))
+      .concat([{ n: '냉각기판 1D 전도 R_1D', v: R.R1D, g: 'base' }, { n: '확산저항 R_sp', v: R.Rsp, g: 'imp' }, { n: '대류 R_conv = 1/(h_eff·A)', v: R.Rconv, g: 'imp' }]);
+    if (t !== 'D') items.push({ n: '유체 열용량 R_cal', v: R.Rcal, g: 'imp' });
+    const tot = items.reduce((a, b) => a + b.v, 0);
+    const rx = 450, ry0 = 34, step = (Hd - 70) / items.length;
+    let T = r.Tj;
+    s += `<text x="${rx}" y="18" font-size="12" font-weight="600" fill="var(--ink)">직렬 열저항망 · R_th,j-f = ${fmt(r.Rth, 3)} K/W</text>`;
+    s += node(rx, ry0, `T_j,max ${fmt(T, 1)} °C`);
+    items.forEach((it, i) => {
+      const yA = ry0 + i * step, yB = yA + step;
+      const imp = it.g === 'imp';
+      const hR = Math.min(step - 10, 22);
+      s += `<line x1="${rx}" y1="${yA}" x2="${rx}" y2="${yA + (step - hR) / 2}" stroke="var(--ink)"/>`;
+      s += `<rect x="${rx - 9}" y="${yA + (step - hR) / 2}" width="18" height="${hR}" fill="${imp ? 'var(--accent-soft)' : 'var(--panel)'}" stroke="${imp ? 'var(--accent)' : 'var(--ink)'}" stroke-width="${imp ? 2 : 1}"/>`;
+      s += `<line x1="${rx}" y1="${yA + (step + hR) / 2}" x2="${rx}" y2="${yB}" stroke="var(--ink)"/>`;
+      const bw = 70 * it.v / tot;
+      s += `<rect x="${rx + 165}" y="${yA + step / 2 - 5}" width="${Math.max(bw, 1)}" height="10" fill="${imp ? 'var(--accent)' : 'var(--muted)'}" fill-opacity=".7"/>`;
+      s += `<text x="${rx + 16}" y="${yA + step / 2 + 4}" font-size="11.5" fill="var(--ink)">${esc(it.n)}</text>`;
+      s += `<text x="${rx + 240}" y="${yA + step / 2 + 4}" font-size="11" class="mono" fill="var(--muted)">${fmt(it.v, 4)} K/W  ΔT ${fmt(it.v * Q, 1)} K</text>`;
+      T -= it.v * Q;
+      if (i < items.length - 1) s += `<circle cx="${rx}" cy="${yB}" r="2.5" fill="var(--ink)"/>`;
+    });
+    s += node(rx, ry0 + items.length * step, `T_f,in ${fmt(P.Tin, 1)} °C ${t === 'D' ? '(= T_sat,in)' : ''}`);
+    s += `<rect x="${rx + 130}" y="${Hd - 22}" width="12" height="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/><text x="${rx + 148}" y="${Hd - 13}" font-size="11" fill="var(--muted)">필라·제트·비등이 바꾸는 구간</text>`;
+    return `<svg viewBox="0 0 ${Wd} ${Hd}" width="100%" style="max-width:${Wd}px" role="img" aria-label="파워모듈 열전달 경로와 열저항망">${s}</svg>`;
+    function node(x, y, txt) { return `<circle cx="${x}" cy="${y}" r="5" fill="var(--panel)" stroke="var(--ink)" stroke-width="1.5"/><text x="${x - 12}" y="${y + 4}" text-anchor="end" font-size="11.5" class="mono" fill="var(--ink)">${txt}</text>`; }
+  }
+  function arrow(x1, y1, x2, y2, c, op = 1) {
+    const a = Math.atan2(y2 - y1, x2 - x1), L = 7;
+    return `<g stroke="${c}" fill="${c}" opacity="${op}"><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke-width="2"/><path d="M${x2},${y2} L${x2 - L * Math.cos(a - 0.45)},${y2 - L * Math.sin(a - 0.45)} L${x2 - L * Math.cos(a + 0.45)},${y2 - L * Math.sin(a + 0.45)} Z" stroke="none"/></g>`;
+  }
+  function stackedBars(rows, P) {
+    const keys = [['pkg', '패키지 (다이~접합)', 'var(--muted)'], ['R1D', '냉각기판 전도', '#b8692e'], ['Rsp', '확산', 'var(--cB)'], ['Rconv', '대류', 'var(--accent)'], ['Rcal', '유체 열용량', 'var(--cD)']];
+    const vals = rows.map(r => ({ r, v: { pkg: r.R.Rpkg, R1D: r.R.R1D, Rsp: r.R.Rsp, Rconv: r.R.Rconv, Rcal: r.R.Rcal } }));
+    const mx = Math.max(...vals.map(x => Object.values(x.v).reduce((a, b) => a + b, 0)));
+    const W = 760, lw = 210, bw = W - lw - 70, rh = 24;
+    let s = '';
+    vals.forEach((x, i) => {
+      let xx = lw;
+      const y = 10 + i * rh;
+      s += `<text x="${lw - 8}" y="${y + 13}" text-anchor="end" font-size="11.5" fill="var(--ink)">${esc(x.r.cs.id)} · ${esc(TYPES[x.r.cs.type].short)} · ${esc(x.r.cs.type === 'REF' ? TC.FLUIDS[x.r.cs.fluid].name : fluidName(x.r.cs))}</text>`;
+      keys.forEach(([k, , c]) => { const w = bw * x.v[k] / mx; s += `<rect x="${xx}" y="${y + 3}" width="${Math.max(w, 0)}" height="${rh - 8}" fill="${c}" fill-opacity=".8"/>`; xx += w; });
+      s += `<text x="${xx + 6}" y="${y + 13}" font-size="11" class="mono" fill="var(--muted)">${fmt(x.r.Rth, 3)}</text>`;
+    });
+    const H = 20 + rows.length * rh;
+    return `<div class="legend">${keys.map(([, n, c]) => `<span><span class="sw" style="background:${c}"></span>${n}</span>`).join('')}<span class="note">단위 K/W, 막대 끝 숫자 = R_th,j-f</span></div>
+      <div class="tblwrap"><svg viewBox="0 0 ${W} ${H}" width="100%" style="min-width:600px" role="img" aria-label="경우별 열저항 구성">${s}</svg></div>`;
+  }
+  function renderPath() {
+    const { P, res, ref } = S;
+    const r = res.find(x => x.cs.id === pathSel) || res[0];
+    const rRef = ref;
+    const dConv = (1 - r.R.Rconv / rRef.R.Rconv) * 100, dSp = (1 - r.R.Rsp / rRef.R.Rsp) * 100;
+    const opts = res.map(x => `<option value="${x.cs.id}" ${x.cs.id === r.cs.id ? 'selected' : ''}>${x.cs.id} · ${esc(x.cs.long)}</option>`).join('');
+    $('#v-path').innerHTML = `
+      <p class="req">PDF 수행항목 1) 파워모듈의 열원, 패키지, 열확산판, 냉각 표면 및 냉각유체를 포함한 열전달 경로를 그리고, 제트 또는 필라가 열저항망의 어느 구간을 개선하는지 설명한다.</p>
+      <div class="card"><div class="row"><label for="pathSel">표시할 경우</label><select id="pathSel">${opts}</select><span class="note">비교 기준: ${modeTxt(P)}</span></div>
+      <div class="tblwrap">${stackSVG(r, P)}</div></div>
+      <div class="card"><h2>필라·제트가 개선하는 구간</h2>
+        <p>칩에서 유체까지 열은 <b>패키지 전도 → 냉각기판 전도·확산 → 대류 → 유체 열용량</b> 순서로 직렬로 흐릅니다. 다이, 접합층, DBC 같은 패키지 층은 모든 경우에 같으므로 냉각안의 차이는 아래 세 구간에서만 생깁니다.</p>
+        <div class="expl">
+          <div><b>대류 R_conv = 1/(h·A_eff)</b>필라는 젖은 면적 A_eff를 넓히고(핀 효율 η 반영), 제트는 경계층을 얇게 만들어 h를 높입니다. 2상은 비등으로 h를 높입니다. 이 경우 R_conv는 기준(평탄 미세유로) 대비 <b class="num">${fmt(dConv, 0)}%</b> 감소합니다.</div>
+          <div><b>확산 R_sp</b>냉각면의 h_eff가 클수록 Biot 수가 커져 열이 칩 바로 아래로 집중되므로 확산저항이 바뀝니다(Lee-Song 식). 기준 대비 <b class="num">${fmt(dSp, 0)}%</b> 변화, Bi = <span class="num">${fmt(r.Bi, 2)}</span>.</div>
+          <div><b>유체 열용량 R_cal</b>채널형(A)은 유체가 하류로 갈수록 데워집니다. 제트(B·C)는 칩 위치마다 신선한 유체를 공급해 R_cal과 온도편차를 줄입니다. 2상(D)은 잠열을 쓰므로 유체온도가 포화온도 근처로 유지됩니다.</div>
+          <div><b>변하지 않는 구간</b>패키지 합계 <span class="num">${fmt(r.R.Rpkg, 4)} K/W</span>(ΔT ${fmt(r.R.Rpkg * P.common.Q, 1)} K)는 냉각안과 무관합니다. 이 값이 크면 냉각면을 아무리 개선해도 효과가 제한되므로 세라믹·접합재 선정도 함께 봐야 합니다.</div>
+        </div></div>
+      <div class="card"><h2>경우별 열저항 구성 (같은 비교 기준)</h2>${stackedBars(res.concat([ref]), P)}
+        <p class="note">REF(평탄 미세유로)는 필라·제트 없이 같은 채널 높이를 쓴 기준입니다. 개선 효과를 보이기 위한 비교용이며 후보가 아닙니다.</p></div>`;
+    $('#pathSel').addEventListener('change', e => { pathSel = e.target.value; renderPath(); });
+  }
+
+  // ---------------- 2) 유체 선정표 ----------------
+  function renderFluid() {
+    const { P } = S;
+    const T1 = P.Tin, T2 = P.Tin + 30;
+    const used = new Set([P.fluids.sp1]);
+    const usedTp = new Set([P.fluids.tp1]);
+    const rows = Object.entries(TC.FLUIDS).map(([k, f]) => {
+      const a = TC.props1p(f, T1), b = TC.props1p(f, T2);
+      const Mo = x => Math.pow(x.rho, 0.8) * Math.pow(x.k, 0.6) * Math.pow(x.cp, 0.4) / Math.pow(x.mu, 0.4);
+      const tag = k === P.fluids.sp1 ? '<span class="pill ok">A·B·C 사용</span>' : '';
+      return `<tr class="${used.has(k) ? 'best' : ''}"><td><b>${esc(f.name)}</b> ${tag}<div class="note">${esc(f.full)}</div></td>
+        <td class="n">${fmt(a.rho, 0)}</td><td class="n">${fmt(a.cp, 0)}</td><td class="n">${fmt(a.k, 3)}</td><td class="n">${fmt(a.mu * 1e3, 2)}<br><span class="note">${fmt(b.mu * 1e3, 2)}</span></td>
+        <td class="n">${fmt(a.nu * 1e6, 2)}</td><td class="n">${fmt(a.Pr, 0)}</td><td class="n">${fmt(a.rho * a.cp / 1e6, 2)}</td><td class="n">${fmtS(Mo(a))}</td>
+        <td>${esc(f.dielTxt)}</td><td>${esc(f.flash)}</td><td>${esc(f.compat)}</td><td class="note">${f.url ? `<a href="${f.url}">${esc(f.src)}</a>` : esc(f.src)}</td></tr>`;
+    }).join('');
+    const tprows = Object.entries(TC.TPFLUIDS).map(([k, f]) => {
+      const tag = k === P.fluids.tp1 ? '<span class="pill ok">D 사용</span>' : '';
+      return `<tr class="${usedTp.has(k) ? 'best' : ''}"><td><b>${esc(f.name)}</b> ${tag}<div class="note">${esc(f.full)}</div></td>
+        <td class="n">${fmt(f.Tnb, 1)}</td><td class="n">${fmt(TC.psat(f, P.Tin) / 1e5, 2)}</td><td class="n">${fmt(f.hfg / 1e3, 0)}</td><td class="n">${fmt(f.rhoL, 0)}</td><td class="n">${fmt(TC.rhoV(f, P.Tin), 1)}</td>
+        <td class="n">${fmt(f.kL, 3)}</td><td class="n">${fmt(f.muL * 1e3, 2)}</td><td class="n">${fmt(f.sigma * 1e3, 1)}</td><td>${esc(f.dielTxt)} · ${esc(f.gwp)}</td><td>${esc(f.compat)}</td><td class="note">${esc(f.src)}</td></tr>`;
+    }).join('');
+    $('#v-fluid').innerHTML = `
+      <p class="req">PDF 수행항목 2) 절연 냉각유체 후보의 밀도, 비열, 열전도율, 점도, 전기절연 특성, 사용온도 범위, 재료 적합성, 안전자료를 조사하고 출처와 물성치의 온도·압력을 명시한다.</p>
+      <div class="card"><h2>냉각안별 절연유체 배정</h2>
+        <div class="tblwrap"><table><thead><tr><th>경우</th><th>냉각 구조</th><th>절연 냉각유체</th><th>상</th></tr></thead><tbody>
+        ${S.cases.map(cs => `<tr><td>${sw(cs)}<b>${cs.id}</b></td><td>${TYPES[cs.type].name}</td><td>${esc(cs.type === 'D' ? TC.TPFLUIDS[cs.fluid].full : TC.FLUIDS[cs.fluid].full)}</td><td>${cs.type === 'D' ? '2상(비등)' : '단상'}</td></tr>`).join('')}
+        </tbody></table></div>
+        <p class="note">A·B·C는 같은 단상 유체를 써서 구조 차이만 비교합니다. D는 비등이 필요해 저비점 유체를 쓰고, T_sat,in = T_f,in이 되도록 증발압력을 맞춥니다(PDF 4항). 왼쪽 패널에서 유체를 바꿀 수 있습니다.</p></div>
+      ${fluidStudyCard(P)}
+      <div class="card"><h2>도구에 입력한 유체 물성 원값과 출처</h2>
+        <p>아래는 계산에 실제로 들어간 데이터시트 값입니다. 운전온도의 물성은 이 값으로 보간합니다. 점도는 두 점을 Andrade 식으로 맞추고, 밀도는 기준온도 값에 열팽창계수 β를 적용하며, 비열과 열전도율은 두 점 선형보간을 씁니다. 한 점만 공개된 경우는 일반 탄화수소 온도기울기를 가정했고, 가정한 값은 표에 표시했습니다.</p>
+        <div class="tblwrap"><table style="min-width:1100px"><thead><tr><th>유체</th><th>밀도 ρ</th><th>동점도 ν (두 점)</th><th>비열 c_p</th><th>열전도율 k</th><th>인화점</th><th>전기절연</th><th>출처</th></tr></thead><tbody>
+        ${Object.entries(TC.FLUIDS).filter(([k]) => k !== 'custom').map(([k, f]) => {
+          const nu = f.nuPts || [[40, f.nu40], [100, f.nu100]];
+          const rr = f.rhoRef || [25, f.rho25];
+          const two = (p, u) => p.map(([t, v]) => `${fmtS(v, 4)}${u} @${t} °C`).join('<br>');
+          const one = (v, sl) => `${fmtS(v, 4)} @25 °C<br><span class="note">기울기 ${sl > 0 ? '+' : ''}${(sl * 100).toFixed(2)} %/K (가정)</span>`;
+          return `<tr${k === P.fluids.sp1 ? ' class="best"' : ''}><td><b>${esc(f.name)}</b><div class="note">${esc(f.full)}</div></td>
+            <td class="mono" style="font-size:12px">${fmtS(rr[1], 4)} kg/m³ @${rr[0]} °C<br><span class="note">β ${(f.beta * 1e4).toFixed(2)}e-4 /K</span></td>
+            <td class="mono" style="font-size:12px">${two(nu, ' cSt')}</td>
+            <td class="mono" style="font-size:12px">${f.cpPts ? two(f.cpPts, '') : one(f.cp25, f.cpT)}</td>
+            <td class="mono" style="font-size:12px">${f.kPts ? two(f.kPts, '') : one(f.k25, f.kT)}</td>
+            <td>${esc(f.flash)}</td><td style="font-size:12px">${esc(f.dielTxt)}</td>
+            <td class="note">${f.url ? `<a href="${f.url}">${esc(f.src)}</a>` : esc(f.src)}</td></tr>`;
+        }).join('')}
+        </tbody></table></div>
+        <p class="note">단위: c_p J/kg·K, k W/m·K. 초록 줄 = 현재 선택한 유체. AmpCool AC-110의 70 °C 계산값(ν 4.01 cSt)은 NREL 실측값(3.98 cSt, R5)과 0.7% 차이입니다. LANXESS 값은 제조사 웹페이지의 개략값이라 정식 TDS로 다시 확인해야 합니다. 유체명 옆 출처 링크를 누르면 원문이 열립니다.</p></div>
+      <div class="card"><h2>단상 절연유체 물성 (T = ${fmt(T1, 0)} °C, 1 atm · 점도 아래 값은 ${fmt(T2, 0)} °C)</h2>
+        <div class="tblwrap"><table style="min-width:1250px"><thead><tr><th>유체</th><th class="n">ρ kg/m³</th><th class="n">c_p J/kg·K</th><th class="n">k W/m·K</th><th class="n">μ mPa·s</th><th class="n">ν cSt</th><th class="n">Pr</th><th class="n">ρc_p MJ/m³K</th><th class="n">Mo (난류)</th><th>전기절연</th><th>인화점</th><th>재료 적합성</th><th>출처</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <p class="note">Mo = ρ^0.8·k^0.6·c_p^0.4/μ^0.4 (Mouromtseff 수, Dittus-Boelter 기반). 클수록 같은 유속에서 대류 성능이 좋습니다. 점도는 40·100 °C 동점도로 Andrade 식(ln ν = A + B/T)을 맞춰 온도 보간했습니다. ρ, c_p, k는 선형 온도보정입니다.</p></div>
+</div>`;
+  }
+
+  // ---------------- 3) 구조도·설계변수표 ----------------
+  function geoSVG(t, P) {
+    const g = P.geo[t], c = P.common, W = 300, H = 170;
+    let s = '';
+    const lbl = (x, y, txt, a = 'start') => `<text x="${x}" y="${y}" font-size="10.5" fill="var(--muted)" text-anchor="${a}" class="mono">${txt}</text>`;
+    const dim = (x1, y1, x2, y2) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--muted)" stroke-width="1" marker-start="url(#ar)" marker-end="url(#ar)"/>`;
+    s += `<defs><marker id="ar" viewBox="0 0 6 6" refX="3" refY="3" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L6,3 L0,6 Z" fill="var(--muted)"/></marker></defs>`;
+    s += `<text x="4" y="12" font-size="11" font-weight="600" fill="var(--ink)">측면 단면</text><text x="${W / 2 + 14}" y="12" font-size="11" font-weight="600" fill="var(--ink)">평면 배열 (일부)</text>`;
+    const bx = 8, by = 26, bw = W / 2 - 52;
+    s += `<rect x="${bx}" y="${by}" width="${bw}" height="22" fill="#b8692e" fill-opacity=".85"/>${lbl(bx + 4, by + 15, '냉각기판')}`;
+    if (t === 'A') {
+      const sc = bw / (4 * g.ST);
+      for (let i = 0; i < 4; i++) { const px = bx + (i + 0.5) * g.ST * sc - g.D * sc / 2; s += `<rect x="${px}" y="${by + 22}" width="${g.D * sc}" height="${Math.min(g.H * sc, 90)}" fill="#b8692e" fill-opacity=".7"/>`; }
+      const hh = Math.min(g.H * sc, 90);
+      s += `<rect x="${bx}" y="${by + 22 + hh}" width="${bw}" height="6" fill="var(--muted)" fill-opacity=".4"/>`;
+      s += dim(bx + bw + 6, by + 22, bx + bw + 6, by + 22 + hh) + lbl(bx + bw + 10, by + 26 + hh / 2, 'H=' + fmt(g.H / mm, 2));
+      s += dim(bx + 0.5 * g.ST * sc, by + 32 + hh, bx + 1.5 * g.ST * sc, by + 32 + hh) + lbl(bx + g.ST * sc, by + 46 + hh, 'S_T=' + fmt(g.ST / mm, 2), 'middle');
+      s += arrow(bx, by + 128, bx + 40, by + 128, 'var(--cool)') + lbl(bx + 46, by + 131, '유동');
+      const ox = W / 2 + 14, oy = 26, sc2 = (W / 2 - 24) / (5 * Math.max(g.ST, g.SL));
+      for (let j = 0; j < 5; j++) for (let i = 0; i < 5; i++) {
+        const off = (g.arr === 'stag' && j % 2) ? g.ST * sc2 / 2 : 0;
+        s += `<circle cx="${ox + 10 + j * g.SL * sc2}" cy="${oy + 10 + i * g.ST * sc2 + off}" r="${g.D * sc2 / 2}" fill="#b8692e" fill-opacity=".75"/>`;
+      }
+      s += arrow(ox, oy + 142, ox + 40, oy + 142, 'var(--cool)') + lbl(ox + 46, oy + 145, (g.arr === 'stag' ? '엇갈림' : '정렬') + ' · D=' + fmt(g.D / mm, 2));
+    } else if (t === 'B' || t === 'C') {
+      const sc = bw / (2 * g.S);
+      if (t === 'C') { const n = Math.floor(2 * g.S / g.Sp); for (let i = 0; i < n; i++) { const px = bx + (i + 0.5) * g.Sp * sc; if (Math.abs(((px - bx) / sc) % g.S - g.S / 2) < g.d) continue; s += `<rect x="${px - g.Dp * sc / 2}" y="${by + 22}" width="${g.Dp * sc}" height="${g.Hpil * sc}" fill="#b8692e" fill-opacity=".7"/>`; } }
+      const yn = by + 22 + g.Hj * sc;
+      s += `<rect x="${bx}" y="${yn}" width="${bw}" height="${g.ln * sc}" fill="var(--muted)" fill-opacity=".45"/>`;
+      for (let i = 0; i < 2; i++) { const nx = bx + (i + 0.5) * g.S * sc; s += `<rect x="${nx - g.d * sc / 2}" y="${yn}" width="${g.d * sc}" height="${g.ln * sc}" fill="var(--panel)"/>` + arrow(nx, yn + g.ln * sc + 14, nx, by + 25 + (t === 'C' ? 0 : 0), 'var(--cool)'); }
+      s += dim(bx + bw + 6, by + 22, bx + bw + 6, yn) + lbl(bx + bw + 10, by + 26 + (yn - by - 22) / 2, 'H=' + fmt(g.Hj / mm, 2));
+      s += dim(bx + 0.5 * g.S * sc, yn + g.ln * sc + 24, bx + 1.5 * g.S * sc, yn + g.ln * sc + 24) + lbl(bx + g.S * sc, yn + g.ln * sc + 38, 'S=' + fmt(g.S / mm, 2), 'middle');
+      const ox = W / 2 + 14, oy = 26, sc2 = (W / 2 - 24) / (3 * g.S);
+      if (t === 'C') { const n = Math.floor(3 * g.S / g.Sp); for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) s += `<circle cx="${ox + (i + 0.5) * g.Sp * sc2}" cy="${oy + (j + 0.5) * g.Sp * sc2}" r="${g.Dp * sc2 / 2}" fill="#b8692e" fill-opacity=".55"/>`; }
+      for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) s += `<circle cx="${ox + (i + 0.5) * g.S * sc2}" cy="${oy + (j + 0.5) * g.S * sc2}" r="${Math.max(g.d * sc2 / 2, 2)}" fill="var(--cool)"/>`;
+      s += lbl(ox, oy + 3 * g.S * sc2 + 14, 'd=' + fmt(g.d / mm, 2) + ' · S=' + fmt(g.S / mm, 2)); if (t === 'C') s += lbl(ox, oy + 3 * g.S * sc2 + 28, 'D_p=' + fmt(g.Dp / mm, 2) + ' · S_p=' + fmt(g.Sp / mm, 2));
+    } else {
+      const sc = bw / (4 * (g.wc + g.ww));
+      for (let i = 0; i < 5; i++) s += `<rect x="${bx + i * (g.wc + g.ww) * sc}" y="${by + 22}" width="${g.ww * sc}" height="${Math.min(g.Hc * sc, 90)}" fill="#b8692e" fill-opacity=".7"/>`;
+      const hh = Math.min(g.Hc * sc, 90);
+      s += `<rect x="${bx}" y="${by + 22 + hh}" width="${bw}" height="6" fill="var(--muted)" fill-opacity=".4"/>`;
+      s += dim(bx + bw + 6, by + 22, bx + bw + 6, by + 22 + hh) + lbl(bx + bw + 10, by + 26 + hh / 2, 'H_c=' + fmt(g.Hc / mm, 2));
+      s += lbl(bx, by + 44 + hh, `w_c=${fmt(g.wc / mm, 2)} · w_w=${fmt(g.ww / mm, 2)}`) + lbl(bx, by + 58 + hh, '유동: 지면에 수직');
+      const ox = W / 2 + 14, oy = 26;
+      for (let i = 0; i < 8; i++) s += `<rect x="${ox}" y="${oy + 6 + i * 15}" width="${W / 2 - 30}" height="${15 * g.ww / (g.wc + g.ww)}" fill="#b8692e" fill-opacity=".7"/>`;
+      s += arrow(ox, oy + 135, ox + 40, oy + 135, 'var(--cool)') + lbl(ox + 46, oy + 138, '액체 → 2상');
+    }
+    return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:420px;display:block;margin:0 auto 6px" role="img" aria-label="${TYPES[t].name} 구조도">${s}</svg>`;
+  }
+  function renderGeo() {
+    const { P, res } = S;
+    const g = P.geo;
+    const r = t => res.find(x => x.cs.type === t && x.cs.fi === 1);
+    const tblA = () => { const i = r('A').cr.info; return [['필라 직경 D', fmt(g.A.D / mm, 2) + ' mm'], ['필라 높이 H', fmt(g.A.H / mm, 2) + ' mm'], ['피치 S_T × S_L', `${fmt(g.A.ST / mm, 2)} × ${fmt(g.A.SL / mm, 2)} mm`], ['배열', g.A.arr === 'stag' ? '엇갈림' : '정렬'], ['공극률 ε', fmt(i.porosity, 3)], ['H/D (종횡비)', fmt(g.A.H / g.A.D, 2)], ['필라 수 (행×열)', `${i.N} (${i.NL}행)`], ['젖은면적/설치면적', fmt(i.areaRatio, 2)], ['최소 간극', fmt(r('A').cr.minGap / mm, 3) + ' mm'], ['핀 효율 η (끝단 단열)', fmt(r('A').cr.eta, 3)]]; };
+    const tblB = () => { const i = r('B').cr.info; return [['노즐 직경 d', fmt(g.B.d / mm, 2) + ' mm'], ['노즐 간격 S', fmt(g.B.S / mm, 2) + ' mm'], ['제트-표면 거리 H', fmt(g.B.Hj / mm, 2) + ' mm'], ['H/d', fmt(i.Hd, 2)], ['S/d', fmt(g.B.S / g.B.d, 2)], ['상대 노즐면적 f', fmt(i.f, 4)], ['노즐 수', `${i.N} (${i.nx}×${i.ny})`], ['노즐 길이', fmt(g.B.ln / mm, 2) + ' mm'], ['배출', g.B.exh === 'side' ? '측면(교차류)' : '분산 회수']]; };
+    const tblC = () => { const i = r('C').cr.info; return [['노즐 d / 간격 S', `${fmt(g.C.d / mm, 2)} / ${fmt(g.C.S / mm, 2)} mm`], ['제트-기판 거리 H', fmt(g.C.Hj / mm, 2) + ' mm'], ['제트-필라끝 거리', fmt((g.C.Hj - g.C.Hpil) / mm, 2) + ' mm'], ['필라 D_p / H_p', `${fmt(g.C.Dp / mm, 2)} / ${fmt(g.C.Hpil / mm, 2)} mm`], ['필라 피치 S_p', fmt(g.C.Sp / mm, 2) + ' mm'], ['필라 공극률', fmt(i.porosity, 3)], ['노즐 수 / 필라 수', `${i.N} / ${i.Np}`], ['젖은면적/설치면적', fmt(i.areaRatio, 2)], ['감쇠계수 χ', fmt(g.C.chi, 2)], ['보정 핀 길이 L_c', fmt(i.Lc / mm, 2) + ' mm'], ['핀 효율 η', fmt(r('C').cr.eta, 3)]]; };
+    const tblD = () => { const i = r('D').cr.info; return [['채널 폭 w_c', fmt(g.D.wc / mm, 2) + ' mm'], ['벽 두께 w_w', fmt(g.D.ww / mm, 2) + ' mm'], ['채널 높이 H_c', fmt(g.D.Hc / mm, 2) + ' mm'], ['종횡비 H_c/w_c', fmt(g.D.Hc / g.D.wc, 2)], ['수력직경 D_h', fmt(i.Dh / mm, 3) + ' mm'], ['채널 수', i.N], ['젖은면적/설치면적', fmt(i.areaRatio, 2)], ['작동압력 (D-1)', fmt(r('D').cr.tp.Pin / 1e5, 2) + ' bar']]; };
+    const card = (t, rows, op) => `<div class="card"><h3><span class="sw" style="background:${TYPES[t].color}"></span>${t}. ${TYPES[t].name}</h3>${geoSVG(t, P)}
+      <table><tbody>${rows.map(([k, v]) => `<tr><td>${k}</td><td class="n">${v}</td></tr>`).join('')}</tbody></table>
+      <p class="note" style="margin-top:6px">운전조건(${modeTxt(P)}): ${op}</p></div>`;
+    const opTxt = t => [1].map(i => { const x = res.find(z => z.cs.type === t && z.cs.fi === i); return `${x.cs.id} ${esc(fluidName(x.cs))} V̇=${fmt(x.V * 6e4, 3)} L/min, Δp=${fmt(x.dp / 1e3, 1)} kPa`; }).join(' / ');
+    $('#v-geo').innerHTML = `
+      <p class="req">PDF 수행항목 3) 선택한 냉각안의 형상과 운전조건을 정하고 열·유동 계산을 수행한다. 필라 배열은 직경, 높이, 피치, 배열, 공극률을, 제트는 노즐 직경, 간격, 제트-표면 거리를 제시한다. (제출물: 냉각 구조도, 필라/제트 설계변수표)</p>
+      <div class="grid2">${card('A', tblA(), opTxt('A'))}${card('B', tblB(), opTxt('B'))}${card('C', tblC(), opTxt('C'))}</div>
+      <div class="card"><h3>공통 패키지 조건</h3><div class="tblwrap"><table><thead><tr><th>층</th><th class="n">두께 mm</th><th class="n">k W/m·K</th><th class="n">R K/W</th></tr></thead><tbody>
+      ${res[0].R.layers.map(l => `<tr><td>${esc(l.name)}</td><td class="n">${fmt(l.t / mm, 2)}</td><td class="n">${fmt(l.k, 0)}</td><td class="n">${fmt(l.R, 4)}</td></tr>`).join('')}
+      <tr><td>냉각기판 (${TC.MAT[P.common.baseMat].name})</td><td class="n">${fmt(P.common.tBase / mm, 2)}</td><td class="n">${fmt(P.common.kBase, 0)}</td><td class="n">1D ${fmt(res[0].R.R1D, 4)}</td></tr>
+      </tbody></table></div><p class="note">칩 ${fmt(P.common.chipL / mm, 1)}×${fmt(P.common.chipW / mm, 1)} mm, 설치면적 ${fmt(P.common.L / mm, 1)}×${fmt(P.common.W / mm, 1)} mm, 칩 열유속 ${fmt(P.common.Q / (P.common.chipL * P.common.chipW) / 1e4, 0)} W/cm².</p></div>`;
+  }
+
+  // ---------------- 4) 공정 비교표 ----------------
+  function cmpTable(rows, title, P, note) {
+    const bestG = (g) => bestBy(rows.filter(g), r => r.Tj);
+    const b1 = bestG(r => r.cs.type !== 'D' && r.cs.fi === 1), b2 = bestG(r => r.cs.type !== 'D' && r.cs.fi === 2), bD = bestG(r => r.cs.type === 'D');
+    const isBest = r => r === b1 || r === b2 || r === bD;
+    const body = rows.map(r => {
+      const tp = r.cs.type === 'D' ? r.cr.tp : null;
+      return `<tr class="${isBest(r) ? 'best' : ''}"><td style="white-space:nowrap">${sw(r.cs)}<b>${r.cs.id}</b></td><td style="white-space:nowrap">${TYPES[r.cs.type].short}</td><td style="white-space:nowrap">${esc(fluidName(r.cs))}</td>
+        <td class="n">${fmt(r.V * 6e4, 3)}</td><td class="n">${fmt(r.mdot * 1e3, 2)}</td><td class="n">${fmtS(r.cr.Re)}</td><td class="n">${fmtS(r.cr.h)}</td><td class="n">${fmtS(r.cr.heff)}</td>
+        <td class="n">${fmt(r.dp / 1e3, 2)}</td><td class="n">${fmt(r.W, 3)}</td><td class="n">${tp ? 'x=' + fmt(tp.xout, 2) : fmt(r.Tout, 1)}</td>
+        <td class="n"><b>${fmt(r.Tj, 1)}</b><div class="note">175 °C 대비 ${fmt(175 - r.Tj, 0)} K 여유</div></td><td class="n">${fmt(r.dev, 1)}</td><td class="n">${fmt(r.Rth, 3)}</td><td class="n">${fmt(r.Rth * P.common.chipL * P.common.chipW * 1e6, 1)}</td><td class="n">${fmt(r.cr.uniform * 100, 0)}%</td><td style="white-space:nowrap">${warnPill(r)}</td></tr>`;
+    }).join('');
+    return `<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">${title}</h2><button class="btn" data-csv="${esc(title)}">표 복사 (CSV)</button></div>
+      <div class="tblwrap"><table><thead><tr><th>경우</th><th>냉각 구조</th><th>절연유체</th><th class="n">유량 L/min</th><th class="n">ṁ g/s</th><th class="n">Re</th><th class="n">h W/m²K</th><th class="n">h_eff W/m²K</th><th class="n">Δp kPa</th><th class="n">W_pump W</th><th class="n">T_out °C</th><th class="n">T_j,max °C</th><th class="n">ΔT_칩 K</th><th class="n">R_th,j-f K/W</th><th class="n">R'' mm²K/W</th><th class="n">유량균일도</th><th>상태</th></tr></thead><tbody>${body}</tbody></table></div>
+      <p class="note">${note} 초록 줄 = 최저 T_j. R'' = R_th × 칩 면적(논문과 같은 비열저항 정의). h_eff는 설치면적 기준 유효 열전달계수(핀 효율·면적 증가 포함). ΔT_칩은 유체 온도상승·h 분포·포화온도 강하로 추정한 1차 값입니다.</p></div>`;
+  }
+  function chartSVG(o) {
+    const W = 760, H = 330, ml = 58, mr = 16, mt = 14, mb = 44;
+    const all = o.series.flatMap(s => s.pts).filter(p => isFinite(p[0]) && isFinite(p[1]) && (!o.xlog || p[0] > 0));
+    if (!all.length) return '<p class="note">표시할 점이 없습니다.</p>';
+    let x0 = o.xmin ?? Math.min(...all.map(p => p[0])), x1 = o.xmax ?? Math.max(...all.map(p => p[0]));
+    let y0 = o.ymin ?? Math.min(...all.map(p => p[1])), y1 = o.ymax ?? Math.max(...all.map(p => p[1]));
+    if (!o.ylog) { const pad = (y1 - y0) * 0.06 || 1; y0 -= pad; y1 += pad; }
+    const tx = v => o.xlog ? Math.log10(v) : v, ty = v => o.ylog ? Math.log10(v) : v;
+    const X = v => ml + (tx(v) - tx(x0)) / (tx(x1) - tx(x0) || 1) * (W - ml - mr);
+    const Y = v => H - mb - (ty(v) - ty(y0)) / (ty(y1) - ty(y0) || 1) * (H - mt - mb);
+    let s = '';
+    const ticks = (a, b, log) => {
+      if (log) { const out = []; for (let e = Math.floor(Math.log10(a)); e <= Math.ceil(Math.log10(b)); e++) for (const m of [1, 2, 5]) { const v = m * 10 ** e; if (v >= a * 0.999 && v <= b * 1.001) out.push(v); } return out; }
+      const st = niceStep((b - a) / 5); const out = []; for (let v = Math.ceil(a / st) * st; v <= b + 1e-9; v += st) out.push(+v.toPrecision(10)); return out;
+    };
+    ticks(x0, x1, o.xlog).forEach(v => { s += `<line x1="${X(v)}" y1="${mt}" x2="${X(v)}" y2="${H - mb}" stroke="var(--line)"/><text x="${X(v)}" y="${H - mb + 15}" font-size="10.5" text-anchor="middle" class="mono" fill="var(--muted)">${fmtS(v, 2)}</text>`; });
+    ticks(y0, y1, o.ylog).forEach(v => { s += `<line x1="${ml}" y1="${Y(v)}" x2="${W - mr}" y2="${Y(v)}" stroke="var(--line)"/><text x="${ml - 6}" y="${Y(v) + 4}" font-size="10.5" text-anchor="end" class="mono" fill="var(--muted)">${fmtS(v, 3)}</text>`; });
+    s += `<text x="${(ml + W - mr) / 2}" y="${H - 8}" font-size="11.5" text-anchor="middle" fill="var(--ink)">${o.xlabel}</text>`;
+    s += `<text x="14" y="${(mt + H - mb) / 2}" font-size="11.5" text-anchor="middle" fill="var(--ink)" transform="rotate(-90 14 ${(mt + H - mb) / 2})">${o.ylabel}</text>`;
+    if (o.vline && o.vline > x0 && o.vline < x1) s += `<line x1="${X(o.vline)}" y1="${mt}" x2="${X(o.vline)}" y2="${H - mb}" stroke="var(--ink)" stroke-dasharray="4 3" opacity=".6"/><text x="${X(o.vline) + 4}" y="${mt + 11}" font-size="10.5" fill="var(--ink)">비교 기준</text>`;
+    s += `<clipPath id="cp${o.id}"><rect x="${ml}" y="${mt}" width="${W - ml - mr}" height="${H - mt - mb}"/></clipPath><g clip-path="url(#cp${o.id})">`;
+    o.series.forEach(se => {
+      const pts = se.pts.filter(p => isFinite(p[0]) && isFinite(p[1]) && (!o.xlog || p[0] > 0) && (!o.ylog || p[1] > 0));
+      if (pts.length > 1) s += `<polyline points="${pts.map(p => X(p[0]) + ',' + Y(p[1])).join(' ')}" fill="none" stroke="${se.color}" stroke-width="2" ${se.dash ? 'stroke-dasharray="6 4"' : ''}/>`;
+      if (se.mark) s += `<circle cx="${X(se.mark[0])}" cy="${Y(se.mark[1])}" r="4.5" fill="${se.color}" stroke="var(--panel)" stroke-width="1.5"/>`;
+    });
+    s += '</g>';
+    const leg = `<div class="legend">${o.series.map(se => `<span><svg width="22" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="${se.color}" stroke-width="2" ${se.dash ? 'stroke-dasharray="5 3"' : ''}/></svg>${esc(se.name)}</span>`).join('')}</div>`;
+    return leg + `<div class="tblwrap"><svg viewBox="0 0 ${W} ${H}" width="100%" style="min-width:520px" role="img" aria-label="${esc(o.ylabel)} 대 ${esc(o.xlabel)}">${s}</svg></div>`;
+  }
+  function niceStep(x) { const e = Math.floor(Math.log10(x)), f = x / 10 ** e; return (f < 1.5 ? 1 : f < 3.5 ? 2 : f < 7.5 ? 5 : 10) * 10 ** e; }
+  let curveX = 'W', curveY = 'Tj';
+  function curves() {
+    const { P, res } = S;
+    const ser = res.map(r => {
+      const pts = [];
+      for (let i = 0; i <= 44; i++) {
+        const V = 10 ** (-2 + i * 3 / 44) / 6e4;
+        if (r.cs.type === 'D') { const tf = TC.TPFLUIDS[r.cs.fluid]; if (P.common.Q / (tf.rhoL * V * tf.hfg) > 0.98) continue; }
+        const e = TC.evaluate(r.cs, V, P);
+        const x = curveX === 'W' ? e.W : curveX === 'dp' ? e.dp / 1e3 : e.V * 6e4;
+        pts.push([x, curveY === 'Tj' ? e.Tj : e.Rth]);
+      }
+      const mx = curveX === 'W' ? r.W : curveX === 'dp' ? r.dp / 1e3 : r.V * 6e4;
+      return { name: `${r.cs.id} ${TYPES[r.cs.type].short} · ${fluidName(r.cs)}`, color: caseColor(r.cs), dash: r.cs.fi === 2, pts, mark: [mx, curveY === 'Tj' ? r.Tj : r.Rth] };
+    });
+    const vline = P.mode === 'power' && curveX === 'W' ? P.target : P.mode === 'dp' && curveX === 'dp' ? P.target / 1e3 : P.mode === 'flow' && curveX === 'V' ? P.target * 6e4 : null;
+    const xr = { W: [1e-3, 20], dp: [0.1, 300], V: [0.01, 10] }[curveX];
+    const marks = ser.map(s => s.mark[1]).filter(isFinite);
+    return chartSVG({
+      id: 'cv', series: ser, xlog: true, xmin: xr[0], xmax: xr[1], vline,
+      ymin: curveY === 'Tj' ? Math.max(P.Tin, Math.min(...marks) - 25) : undefined, ymax: curveY === 'Tj' ? Math.max(...marks) + 60 : Math.max(...ser.map(s => s.mark[1])) * 2.2,
+      xlabel: { W: '펌프동력 W_pump [W] (로그)', dp: '압력강하 Δp [kPa] (로그)', V: '유량 [L/min] (로그)' }[curveX],
+      ylabel: curveY === 'Tj' ? 'T_j,max [°C]' : 'R_th,j-f [K/W]'
+    });
+  }
+  function renderCmp() {
+    const { P, res, flowRes } = S;
+    const warnBlock = res.filter(r => r.warn.length || r.limited).map(r => `<li><b>${r.cs.id}</b>: ${r.limited ? '목표 조건을 만족하는 유량을 찾지 못해 경계값으로 계산함. ' : ''}${r.warn.map(esc).join(' · ')}</li>`).join('');
+    $('#v-cmp').innerHTML = `
+      <p class="req">PDF 수행항목 4) 같은 칩 발열량, 유체 종류, 입구온도, 설치 면적, 패키지 조건으로 후보를 비교한다. 기본 비교는 동일 펌핑동력 또는 공통 압력강하 제한에서 하고, 필요하면 동일 유량 비교를 추가한다. 2상안은 증발압력과 유량 제어조건을 따로 맞춰 비교한다.</p>
+      ${cmpTable(res, `공정 비교표 · ${modeTxt(P)}`, P, `공통: Q=${fmtS(P.common.Q)} W, T_in=${fmtS(P.Tin)} °C, 설치면적 ${fmt(P.common.L / mm, 0)}×${fmt(P.common.W / mm, 0)} mm, 동일 패키지. D는 T_sat,in=T_in이 되는 증발압력에서 운전.`)}
+      <div class="card"><h2>성능곡선: 같은 동력·압력에서 누가 더 차가운가</h2>
+        <div class="row"><label for="cvX">가로축</label><select id="cvX"><option value="W">펌프동력</option><option value="dp">압력강하</option><option value="V">유량</option></select>
+        <label for="cvY">세로축</label><select id="cvY"><option value="Tj">T_j,max</option><option value="R">R_th,j-f</option></select></div>
+        ${curves()}
+        <p class="note">선마다 유량을 0.01~10 L/min으로 바꿔 계산했고, 점은 현재 비교 기준의 운전점입니다. 같은 가로 위치에서 아래에 있는 선일수록 우수합니다. 곡선이 서로 교차하면 순위가 운전조건에 따라 바뀐다는 뜻이므로 선정 근거로 쓸 수 있습니다.</p></div>
+      ${flowRes ? cmpTable(flowRes, `추가: 동일 유량 비교 · ${fmtS(P.flowV * 6e4)} L/min`, P, '유량을 같게 두면 압력강하가 큰 구조가 유리하게 보이므로, 이 표는 참고용입니다.') : ''}
+      <div class="card"><h3>계산 경고 (상관식 적용범위·운전 위험)</h3><ul class="warnlist">${warnBlock || '<li>없음</li>'}</ul></div>`;
+    $('#cvX').value = curveX; $('#cvY').value = curveY;
+    $('#cvX').addEventListener('change', e => { curveX = e.target.value; renderCmp(); });
+    $('#cvY').addEventListener('change', e => { curveY = e.target.value; renderCmp(); });
+    document.querySelectorAll('#v-cmp [data-csv]').forEach(b => b.addEventListener('click', () => copyCSV(b.dataset.csv.startsWith('추가') ? flowRes : res, b)));
+  }
+  function copyCSV(rows, btn) {
+    const head = ['경우', '냉각구조', '절연유체', '유량 L/min', 'mdot g/s', 'Re', 'h W/m2K', 'h_eff W/m2K', 'dp kPa', 'W_pump W', 'T_out/x_out', 'Tj_max C', 'dT_chip K', 'Rth K/W', '균일도'];
+    const lines = [head.join(',')].concat(rows.map(r => [r.cs.id, TYPES[r.cs.type].name, fluidName(r.cs), fmt(r.V * 6e4, 4), fmt(r.mdot * 1e3, 3), fmtS(r.cr.Re), fmtS(r.cr.h), fmtS(r.cr.heff), fmt(r.dp / 1e3, 3), fmt(r.W, 4), r.cs.type === 'D' ? fmt(r.cr.tp.xout, 3) : fmt(r.Tout, 2), fmt(r.Tj, 2), fmt(r.dev, 2), fmt(r.Rth, 4), fmt(r.cr.uniform, 3)].map(v => `"${v}"`).join(',')));
+    const txt = lines.join('\n');
+    const done = ok => { btn.textContent = ok ? '복사됨' : '복사 실패: 표를 직접 선택해 복사하세요'; setTimeout(() => btn.textContent = '표 복사 (CSV)', 2200); };
+    try { navigator.clipboard.writeText(txt).then(() => done(true), () => done(false)); } catch (e) { done(false); }
+  }
+
+  // ---------------- 5) 가중치 평가표 ----------------
+  let WEIGHTS = Object.fromEntries(TC.CRIT.map(c => [c.key, c.w]));
+  function getWeights() { return Object.assign({}, WEIGHTS); }
+  function rawTxt(k, v) {
+    switch (k) { case 'Tj': return fmt(v, 1) + ' °C'; case 'dev': return fmt(v, 1) + ' K'; case 'Rth': return fmt(v, 3); case 'uniform': return fmt(v * 100, 0) + '%'; case 'dp': return fmt(v / 1e3, 1) + ' kPa'; case 'W': return fmt(v, 2) + ' W'; default: return fmt(v, 1); }
+  }
+  function renderScore() {
+    const { sc } = S;
+    const ranked = sc.slice().sort((a, b) => b.total - a.total);
+    const rank = new Map(ranked.map((x, i) => [x, i + 1]));
+    const head = TC.CRIT.map(c => `<th class="n">${c.name}<br><input id="w_${c.key}" type="number" min="0" step="1" value="${WEIGHTS[c.key]}" style="width:56px" aria-label="${c.name} 가중치"></th>`).join('');
+    const body = sc.map(row => `<tr class="${rank.get(row) === 1 ? 'best' : ''}"><td>${sw(row.r.cs)}<b>${row.r.cs.id}</b><div class="note">${esc(fluidName(row.r.cs))}</div></td>
+      ${TC.CRIT.map(c => `<td class="n">${fmt(row.s[c.key], 1)}<div class="note">${rawTxt(c.key, row.raw[c.key])}</div></td>`).join('')}
+      <td class="n"><b>${fmt(row.total, 1)}</b></td><td class="n">${row.r.feasible ? rank.get(row) : '–'}</td></tr>`).join('');
+    const wsum = Object.values(WEIGHTS).reduce((a, b) => a + b, 0);
+    $('#v-score').innerHTML = `
+      <p class="req">PDF 수행항목 5) 칩 최고온도와 온도편차, 접합부-유체 열저항, 유량 균일도, 압력강하, 순환동력, 막힘·세척성, 제작·접합 가능성, 전기절연, 비용을 기준으로 가중치 평가표를 작성한다.</p>
+      <div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">가중치 평가표</h2><span class="note">가중치 합 ${wsum} · 총점은 100점 만점으로 환산</span></div>
+      <div class="tblwrap"><table><thead><tr><th>경우</th>${head}<th class="n">총점</th><th class="n">순위</th></tr></thead><tbody>${body}</tbody></table></div>
+      <p class="note">정량 항목은 4개 냉각안 안에서 최고 = 5점, 최저 = 1점으로 선형 환산했습니다(상대평가). 유량 균일도만 절대척도(80% = 1점, 100% = 5점)로 환산해 1%p 수준의 차이가 과장되지 않게 했습니다. 막힘·세척성은 최소 간극(≥1 mm = 5점, 0.15 mm 미만 = 1~2점), 전기절연은 유체 등급, 제작·비용은 왼쪽 패널의 정성 점수입니다. 동일 펌프동력 비교에서는 펌프동력 항목이 모두 5점이 됩니다. 가중치를 바꾸면 모든 탭에 바로 반영됩니다.</p></div>`;
+    TC.CRIT.forEach(c => $('#w_' + c.key).addEventListener('change', e => { WEIGHTS[c.key] = Math.max(0, parseFloat(e.target.value) || 0); recalc(); }));
+  }
+
+  // ---------------- 6) 선정·민감도 ----------------
+  const TYPE_PROS = {
+    A: ['구조가 단순하고 일체 가공(스카이빙·MIM·적층)으로 제작 가능', '저유량에서도 젖은 면적 증가 효과가 큼'],
+    B: ['칩 위치에 신선한 유체를 직접 공급해 온도편차가 작음', '열원 배치가 바뀌어도 노즐 배치만 바꾸면 됨'],
+    C: ['제트의 국부 냉각과 필라의 면적 증가를 함께 얻음', '같은 동력에서 h_eff가 가장 높아질 수 있음'],
+    D: ['잠열로 유체온도가 거의 일정해 낮은 유량으로 큰 열 제거', '높은 h로 R_conv가 가장 작음']
+  };
+  const TYPE_CONS = {
+    A: ['하류로 갈수록 유체가 데워져 칩 온도편차 발생', '간극이 좁으면 막힘·세척성 불리'],
+    B: ['절연유체는 점도가 높아 제트 Re가 낮음 → 상관식 외삽·성능 저하', '노즐판·매니폴드 추가로 부품 수 증가'],
+    C: ['노즐판과 필라 이중 가공으로 제작·접합이 가장 복잡', '제트-필라 간격 공차에 성능이 민감(정체·우회)'],
+    D: ['증발압력 제어, 응축기, 기액분리 등 계통 부품이 추가됨', '건조·CHF·유동 불안정 위험, 2상 유체가 고가이고 PFAS 규제 이슈']
+  };
+  function winnerOf(P, res, W) { const t = TC.score(res, W, P).filter(x => x.r.feasible).sort((a, b) => b.total - a.total); return t[0]; }
+  function renderSel() {
+    const { P, res, sc, W } = S;
+    const ranked = sc.filter(x => x.r.feasible).sort((a, b) => b.total - a.total);
+    const win = ranked[0], second = ranked[1];
+    const wr = win.r;
+    const strengths = TC.CRIT.map(c => ({ c, d: win.s[c.key] - (sc.reduce((a, x) => a + x.s[c.key], 0) / sc.length) })).sort((a, b) => b.d - a.d);
+    // 가중치 민감도
+    const wRows = TC.CRIT.map(c => {
+      const lo = Object.assign({}, W, { [c.key]: W[c.key] * 0.5 }), hi = Object.assign({}, W, { [c.key]: W[c.key] * 2 }), z = Object.assign({}, W, { [c.key]: 0 });
+      const a = winnerOf(P, res, z), b = winnerOf(P, res, lo), d = winnerOf(P, res, hi);
+      const cell = x => `<td class="${x.r.cs.id !== win.r.cs.id ? '' : ''}">${x.r.cs.id !== win.r.cs.id ? '<b style="color:var(--warn)">' + x.r.cs.id + '</b>' : x.r.cs.id} <span class="note">${fmt(x.total, 1)}</span></td>`;
+      return `<tr><td>${c.name} <span class="note">(${W[c.key]})</span></td>${cell(a)}${cell(b)}${cell(d)}</tr>`;
+    }).join('');
+    const presets = [
+      ['열성능 중시', { Tj: 35, dev: 15, Rth: 15, uniform: 10, dp: 5, W: 5, clog: 5, fab: 5, diel: 5, cost: 0 }],
+      ['제작·비용 중시', { Tj: 10, dev: 5, Rth: 5, uniform: 5, dp: 5, W: 5, clog: 15, fab: 25, diel: 5, cost: 20 }],
+      ['신뢰성 중시', { Tj: 10, dev: 10, Rth: 5, uniform: 20, dp: 5, W: 5, clog: 25, fab: 5, diel: 15, cost: 0 }],
+      ['균등 가중', Object.fromEntries(TC.CRIT.map(c => [c.key, 10]))]
+    ].map(([n, w]) => { const x = winnerOf(P, res, w); return `<tr><td>${n}</td><td>${x.r.cs.id !== win.r.cs.id ? '<b style="color:var(--warn)">' + x.r.cs.id + '</b>' : x.r.cs.id} · ${esc(x.r.cs.long)}</td><td class="n">${fmt(x.total, 1)}</td></tr>`; }).join('');
+    // 운전조건 민감도
+    const opCases = [
+      ['기준', {}], ['Q −20%', { Q: 0.8 }], ['Q +20%', { Q: 1.2 }], ['T_in −10 K', { dT: -10 }], ['T_in +10 K', { dT: 10 }], ['목표값 ×0.5', { tg: 0.5 }], ['목표값 ×2', { tg: 2 }]
+    ];
+    const singles = res.filter(r => r.cs.type !== 'D');
+    const opRows = opCases.map(([n, m]) => {
+      const P2 = JSON.parse(JSON.stringify(P));
+      if (m.Q) P2.common.Q *= m.Q; if (m.dT) P2.Tin += m.dT; if (m.tg) P2.target *= m.tg;
+      const rr = S.cases.map(cs => Object.assign(TC.solve(cs, P2, P2.mode, P2.target), { cs }));
+      const w = winnerOf(P2, rr, W);
+      const bt = bestBy(rr, r => r.Tj), bs = bestBy(rr.filter(r => r.cs.type !== 'D'), r => r.Tj);
+      const wTj = rr.find(r => r.cs.id === win.r.cs.id);
+      return `<tr><td>${n}</td><td>${w.r.cs.id !== win.r.cs.id ? '<b style="color:var(--warn)">' + w.r.cs.id + '</b>' : w.r.cs.id}</td><td>${bt.cs.id} <span class="note">${fmt(bt.Tj, 1)} °C</span></td><td>${bs.cs.id} <span class="note">${fmt(bs.Tj, 1)} °C</span></td><td class="n">${fmt(wTj.Tj, 1)}</td></tr>`;
+    }).join('');
+    const risks = wr.warn.length ? wr.warn.map(w => `<li>${esc(w)}</li>`).join('') : '<li>계산상 경고 없음. 다만 상관식 기반 1차 설계이므로 CFD 또는 시험으로 확인 필요.</li>';
+    $('#v-sel').innerHTML = `
+      <p class="req">PDF 수행항목 6) 최적안을 선정하고 다른 후보보다 유리한 조건과 불리한 조건을 함께 제시한다. 우선순위가 바뀔 때 선정안이 달라지는지 간단한 민감도 분석을 수행한다. (제출물: 선정 근거 · 평가기준·가중치·민감도 결과, 선택 이유와 남은 위험)</p>
+      <div class="card winner"><h2>현재 가중치 기준 선정안: ${wr.cs.id} · ${esc(wr.cs.long)}</h2>
+        <dl class="kv"><dt>총점</dt><dd class="num">${fmt(win.total, 1)} / 100 (2위 ${second.r.cs.id} ${fmt(second.total, 1)}, 차이 ${fmt(win.total - second.total, 1)})</dd>
+        <dt>운전점</dt><dd class="num">${modeTxt(P)} · V̇ ${fmt(wr.V * 6e4, 3)} L/min · Δp ${fmt(wr.dp / 1e3, 1)} kPa · W ${fmt(wr.W, 3)} W</dd>
+        <dt>열성능</dt><dd class="num">T_j,max ${fmt(wr.Tj, 1)} °C · R_th,j-f ${fmt(wr.Rth, 3)} K/W · ΔT_칩 ${fmt(wr.dev, 1)} K</dd>
+        <dt>점수 강점</dt><dd>${strengths.filter(x => x.d > 0.05).slice(0, 3).map(x => x.c.name).join(', ') || '없음'}</dd>
+        <dt>점수 약점</dt><dd>${strengths.filter(x => x.d < -0.05).slice(-3).map(x => x.c.name).join(', ') || '평균 이하 항목 없음'}</dd></dl></div>
+      <div class="grid2">
+        <div class="card"><h3>유리한 조건</h3><ul class="tight">${TYPE_PROS[wr.cs.type].map(t => `<li>${t}</li>`).join('')}<li>점수상 평균보다 앞서는 항목: ${strengths.filter(x => x.d > 0.3).map(x => x.c.name).join(', ') || '없음'}</li></ul></div>
+        <div class="card"><h3>불리한 조건</h3><ul class="tight">${TYPE_CONS[wr.cs.type].map(t => `<li>${t}</li>`).join('')}<li>점수상 평균보다 뒤지는 항목: ${strengths.filter(x => x.d < -0.3).map(x => x.c.name).join(', ') || '없음'}</li></ul></div>
+      </div>
+      <div class="card"><h3>남은 위험 (선정안의 계산 경고)</h3><ul class="warnlist">${risks}</ul></div>
+      <div class="card"><h2>민감도 ① 가중치를 바꾸면 1위가 바뀌는가</h2>
+        <div class="tblwrap"><table><thead><tr><th>항목 (현재 가중치)</th><th>가중치 0</th><th>×0.5</th><th>×2</th></tr></thead><tbody>${wRows}</tbody></table></div>
+        <p class="note">주황색 = 현재 선정안(${wr.cs.id})과 다른 1위가 나온 경우입니다. 주황색이 나온 항목이 선정 결과를 좌우하는 핵심 우선순위입니다.</p></div>
+      <div class="grid2">
+        <div class="card"><h3>민감도 ② 우선순위 시나리오</h3><div class="tblwrap"><table><thead><tr><th>시나리오</th><th>1위</th><th class="n">총점</th></tr></thead><tbody>${presets}</tbody></table></div></div>
+        <div class="card"><h3>민감도 ③ 운전조건 변화</h3><div class="tblwrap"><table><thead><tr><th>조건</th><th>종합 1위</th><th>최저 T_j</th><th>단상 최저 T_j</th><th class="n">${wr.cs.id} T_j °C</th></tr></thead><tbody>${opRows}</tbody></table></div>
+        <p class="note">목표값은 현재 비교 기준(펌프동력, Δp 또는 유량)입니다.</p></div>
+      </div>`;
+  }
+
+  // ---------------- 스윕 ----------------
+  const SWEEP = {
+    A: [['D', '필라 직경 D', 0.2, 1.0], ['H', '필라 높이 H', 0.3, 3.0], ['ST', '피치 S_T=S_L', 0.5, 2.5]],
+    B: [['d', '노즐 직경 d', 0.2, 1.5], ['S', '노즐 간격 S', 1.0, 6.0], ['Hj', '제트-표면 거리 H', 0.3, 5.0]],
+    C: [['d', '노즐 직경 d', 0.2, 1.2], ['S', '노즐 간격 S', 1.2, 5.0], ['Hj', '제트-기판 거리 H', 0.9, 4.0], ['Dp', '필라 직경 D_p', 0.15, 0.6], ['Hpil', '필라 높이 H_p', 0.2, 1.4], ['Sp', '필라 피치 S_p', 0.4, 1.6]],
+    D: [['wc', '채널 폭 w_c', 0.1, 1.0], ['ww', '벽 두께 w_w', 0.1, 0.6], ['Hc', '채널 높이 H_c', 0.3, 3.0]]
+  };
+  let sw_case = 'A', sw_par = 'D', sw_min = 0.2, sw_max = 1.0;
+  function renderSweep() {
+    const { P, cases } = S;
+    const cs = cases.find(c => c.id === sw_case) || cases[0];
+    const plist = SWEEP[cs.type];
+    if (!plist.some(p => p[0] === sw_par)) { sw_par = plist[0][0]; sw_min = plist[0][2]; sw_max = plist[0][3]; }
+    const pts = [], dpp = [];
+    const base = P.geo[cs.type][sw_par] / mm;
+    for (let i = 0; i <= 24; i++) {
+      const v = sw_min + (sw_max - sw_min) * i / 24;
+      const P2 = JSON.parse(JSON.stringify(P));
+      P2.geo[cs.type][sw_par] = v * mm;
+      if (sw_par === 'ST') P2.geo.A.SL = v * mm;
+      const g = P2.geo[cs.type];
+      if ((cs.type === 'A' && g.D >= Math.min(g.ST, g.SL) * 0.95) || (cs.type === 'C' && (g.Dp >= g.Sp * 0.95 || g.Hj <= g.Hpil + 0.05 * mm))) continue;
+      const r = TC.solve(cs, P2, P2.mode, P2.target);
+      if (!r.feasible) continue;
+      pts.push([v, r.Tj]);
+      dpp.push([v, P.mode === 'power' ? r.dp / 1e3 : r.W]);
+    }
+    const cur = TC.solve(cs, P, P.mode, P.target);
+    const opt = pts.reduce((b, p) => (!b || p[1] < b[1]) ? p : b, null);
+    const c1 = chartSVG({ id: 's1', series: [{ name: `${cs.id} T_j,max`, color: caseColor(cs), pts, mark: [base, cur.Tj] }], xlabel: `${plist.find(p => p[0] === sw_par)[1]} [mm]`, ylabel: 'T_j,max [°C]', vline: base });
+    const c2 = chartSVG({ id: 's2', series: [{ name: P.mode === 'power' ? 'Δp [kPa]' : 'W_pump [W]', color: 'var(--muted)', pts: dpp }], xlabel: `${plist.find(p => p[0] === sw_par)[1]} [mm]`, ylabel: P.mode === 'power' ? 'Δp [kPa]' : 'W_pump [W]', vline: base });
+    $('#v-sweep').innerHTML = `
+      <p class="req">형상 결정 보조: 한 변수를 바꾸며 같은 비교 기준(${modeTxt(P)})에서 T_j,max와 압력·동력을 계산합니다. 필라 간격을 줄이면 면적은 늘지만 압력강하와 막힘 위험이 커지는 절충(PDF 고려사항)을 확인하는 데 씁니다.</p>
+      <div class="card"><div class="row">
+        <label for="swCase">경우</label><select id="swCase">${cases.map(c => `<option value="${c.id}" ${c.id === cs.id ? 'selected' : ''}>${c.id} · ${esc(c.long)}</option>`).join('')}</select>
+        <label for="swPar">변수</label><select id="swPar">${plist.map(p => `<option value="${p[0]}" ${p[0] === sw_par ? 'selected' : ''}>${p[1]}</option>`).join('')}</select>
+        <label for="swMin">최소 mm</label><input id="swMin" type="number" step="any" value="${sw_min}" style="width:70px">
+        <label for="swMax">최대 mm</label><input id="swMax" type="number" step="any" value="${sw_max}" style="width:70px"></div>
+        <p class="note">현재값 ${fmt(base, 2)} mm (점선). 이 범위의 최저 T_j: ${opt ? `${fmt(opt[0], 2)} mm에서 ${fmt(opt[1], 1)} °C` : '–'}. 기하학적으로 불가능한 점(필라가 겹침 등)과 건조가 발생한 점은 제외했습니다.</p>
+        <div class="grid2"><div>${c1}</div><div>${c2}</div></div></div>`;
+    $('#swCase').addEventListener('change', e => { sw_case = e.target.value; const t = e.target.value[0]; sw_par = SWEEP[t][0][0]; sw_min = SWEEP[t][0][2]; sw_max = SWEEP[t][0][3]; renderSweep(); });
+    $('#swPar').addEventListener('change', e => { sw_par = e.target.value; const p = SWEEP[cs.type].find(x => x[0] === sw_par); sw_min = p[2]; sw_max = p[3]; renderSweep(); });
+    $('#swMin').addEventListener('change', e => { sw_min = parseFloat(e.target.value) || sw_min; renderSweep(); });
+    $('#swMax').addEventListener('change', e => { sw_max = parseFloat(e.target.value) || sw_max; renderSweep(); });
+  }
+
+  // ---------------- 가정·한계 ----------------
+  function renderNotes() {
+    $('#v-notes').innerHTML = `
+      <div class="card"><h2>계산 방법 요약</h2>
+      <dl class="kv">
+        <dt>열저항</dt><dd>R_th,j-f = (T_j,max − T_f,in)/Q_chip = ΣR_패키지 + R_1D + R_sp + R_conv + R_cal (PDF 권장 지표)</dd>
+        <dt>패키지</dt><dd>층별 1D 전도, 45° 열확산 근사로 층마다 면적 증가: R = t/(k·√(A_top·A_bot))</dd>
+        <dt>확산저항</dt><dd>Lee, Song, Au &amp; Moran (1995) 원형 등가 해석해, 최대온도 기준 ψ_max. 대류면 Biot 수 반영</dd>
+        <dt>A 필라</dt><dd>Zukauskas (1972) 관군 Nu(행수 보정 포함) + 원형 핀 효율(끝단 단열) / Gaddis &amp; Gnielinski (1985) 관군 압력손실 + 입출구 손실 K=1.5</dd>
+        <dt>B 제트</dt><dd>Martin (1977) 원형 노즐 배열 평균 Nu / 노즐 손실(입구 0.5 + 마찰 + 출구 동압 1.0) + 플레넘 + 배출 손실</dd>
+        <dt>C 복합</dt><dd>필라 끝까지 거리로 Martin h 계산 × 감쇠계수 χ → 필라 면적·핀 효율 반영 / 노즐 손실 + 필라 사이 반경방향 통과 손실(Gaddis). 필라 핀 효율은 보정 길이 L_c = H_p + D_p/4로 끝단(윗면) 대류를 근사(윗면과 옆면에 같은 h 가정)</dd>
+        <dt>D 2상</dt><dd>Kim &amp; Mudawar (2013) 미니·마이크로채널 포화 유동비등(평균 건도) / 균질류 마찰 + 가속 압력강하 / Qu &amp; Mudawar (2004) CHF / 포화온도 강하를 온도편차로 반영</dd>
+        <dt>펌프동력</dt><dd>W_pump = Δp·V̇/η_pump. 유체 열수송 Q̇ = ṁ·c_p·ΔT(단상), Q̇ = ṁ·Δh = ṁ·x·h_fg(2상)</dd>
+        <dt>R_cal</dt><dd>채널형(A·REF): (0.5 + 0.5·L_chip/L)/(ṁc_p), 칩 하류부 유체온도 반영. 분산 배출 제트: 0.1/(ṁc_p), 측면 배출: 0.3/(ṁc_p)</dd>
+        <dt>유량균일도</dt><dd>1 − ½·(헤더·플레넘 동압)/(코어 압력강하). 분배부 동압이 작을수록 균일</dd>
+      </dl></div>
+      <div class="card"><h2>한계 (보고서에 명시 권장)</h2><ul class="tight">
+        <li>모든 상관식은 문헌의 특정 치수·유체·Re 범위에서 얻어졌습니다. 절연유체는 점도가 높아 Re가 낮으므로 Martin 식(Re ≥ 2000)은 외삽입니다. PDF가 경고한 대로 문헌의 성능 향상을 그대로 가정하지 말고 CFD나 시험으로 확인해야 합니다.</li>
+        <li>Zukauskas 식은 긴 관군 기준이라 H/D가 작은 마이크로 핀핀에서는 h를 과대평가할 수 있습니다(Kosar &amp; Peles 등 마이크로 핀핀 상관식과 비교 권장).</li>
+        <li>필라 윗면, 옆면, 바닥에 같은 h를 적용함. 실제로는 제트를 정면으로 받는 윗면 h가 더 클 수 있음.</li>
+        <li>C의 χ와 측면 배출 감쇠계수는 가정값입니다. 문헌(예: Waye et al., NREL 2014)이나 CFD로 보정하세요.</li>
+        <li>ΔT_칩(온도편차)은 1차 추정입니다. 실제 분포는 3D 공액 열전달 해석이 필요합니다.</li>
+        <li>D는 포화 입구(과냉 없음)와 평균 건도로 단순화했습니다. 응축기와 증발압력 제어는 2단계 계통 설계에서 다뤄야 합니다.</li>
+        <li>유체 물성은 공개 데이터시트 대표값과 온도보정 근사입니다. 최종 보고서에는 선정한 제품의 데이터시트 값을 사용자 정의 유체로 입력해 다시 계산하세요.</li>
+      </ul></div>
+      <div class="card"><h2>참고문헌·자료</h2><ul class="tight">
+        <li>Waye et al., Advanced Liquid Cooling for a Traction Drive Inverter Using Jet Impingement and Microfinned Enhanced Surfaces, NREL/CP-5400-61060, 2014.</li>
+        <li>Osman et al., Automotive SiC Power Module Cooling With a Novel Modular Manifold and Embedded Heat Sink, J. Electron. Packag. 146(2), 2024.</li>
+        <li>Lee &amp; Kim, Manifold microchannel with pin-fins for ultra-high heat flux cooling, IJHMT, 2024.</li>
+        <li>Zukauskas, A., Heat transfer from tubes in crossflow, Adv. Heat Transfer 8, 1972.</li>
+        <li>Gaddis, E.S. &amp; Gnielinski, V., Pressure drop in cross flow across tube bundles, Int. Chem. Eng. 25, 1985 (VDI Heat Atlas).</li>
+        <li>Martin, H., Heat and mass transfer between impinging gas jets and solid surfaces, Adv. Heat Transfer 13, 1977.</li>
+        <li>Lee, S., Song, S., Au, V., Moran, K.P., Constriction/spreading resistance model for electronics packaging, ASME/JSME Thermal Eng. Conf., 1995.</li>
+        <li>Kim, S.M. &amp; Mudawar, I., Universal approach to predicting saturated flow boiling heat transfer in mini/micro-channels, IJHMT 64, 2013.</li>
+        <li>Qu, W. &amp; Mudawar, I., Measurement and correlation of critical heat flux in two-phase micro-channel heat sinks, IJHMT 47, 2004.</li>
+        <li>Shah, R.K. &amp; London, A.L., Laminar Flow Forced Convection in Ducts, 1978.</li>
+        <li>유체 데이터시트: <a href="https://lanxess.com/en/products/brands/reotherm">LANXESS Reotherm</a>, <a href="https://lubrizol.com/Lubricant-and-Fuel-Additives/Transportation/e-Mobility/Battery-Thermal-Management-Fluids">Lubrizol EVOGEN</a>, <a href="https://lubricants.repsol.com/content/dam/repsol-corporate/en_gb/productos-y-servicios/lubricantes-documentos/ev-fluids-battery-thermal-fluid-en.pdf">Repsol EV-Fluids</a>, <a href="https://totalenergies.co.uk/system/files/atoms/files/on-road_rubia-ev-fluid_brochure.pdf">TotalEnergies Rubia EV</a>, <a href="https://frontiersin.org/articles/10.3389/fmech.2023.1212730/full">Daccord et al. 2023 (액침유 요구물성)</a>, <a href="https://mdpi.com/2075-4442/13/4/176">PAO4/POE–FKM 적합성 (MDPI 2025)</a></li>
+      </ul></div>`;
+  }
+
+  // ---------------- 예비설계 산출물 (A·B·C 선택) ----------------
+  const sb = t => `<sub>${t}</sub>`;
+  const ts = (b, s, rest = '') => `${b}<tspan baseline-shift="sub" font-size="75%">${s}</tspan>${rest}`;
+  const TJ_LIM = 175, TJ_MARGIN = 25;
+  let adSel = 'A';
+  const subFix = x => x.replace(/([A-Za-zχηε])_([A-Za-z0-9]+(?:,[A-Za-z0-9]+)?)/g, '$1<sub>$2</sub>');
+  function adevSVG(P, r, t) {
+    const c = P.common, g = P.geo[t], info = r.cr.info;
+    const Wd = 880, xs0 = 150, xw = 420, sx = xw / c.L, cx = xs0 + xw / 2;
+    const cw = Math.max(40, c.chipL * sx);
+    let s = `<defs><marker id="adm" viewBox="0 0 6 6" refX="3" refY="3" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L6,3 L0,6 Z" fill="var(--muted)"/></marker></defs>`;
+    const T = (x, y, txt, o = {}) => `<text x="${x}" y="${y}" font-size="${o.fs || 11}" ${o.a ? `text-anchor="${o.a}"` : ''} ${o.w ? `font-weight="${o.w}"` : ''} fill="${o.c || 'var(--ink)'}" ${o.mono ? 'class="mono"' : ''}>${txt}</text>`;
+    const dimH = (x1, x2, y) => `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="var(--muted)" marker-start="url(#adm)" marker-end="url(#adm)"/>`;
+    const dimV = (x, y1, y2) => `<line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" stroke="var(--muted)" marker-start="url(#adm)" marker-end="url(#adm)"/>`;
+    const CU = '#b8692e';
+    s += T(20, 20, '유동 방향 단면 (층 두께는 비례 아님, 가로 방향은 실제 비율)', { fs: 12, w: 600 });
+    const L = c.layers;
+    const vis = [
+      [L[0], cw, 22, 'var(--heat)', .85], [L[1], cw, 6, '#9aa5b1', 1], [L[2], cw + 30, 12, '#c77d3a', 1],
+      [L[3], cw + 50, 14, '#dde2e6', 1], [L[4], cw + 50, 12, '#c77d3a', 1], [L[5], cw + 50, 6, '#9aa5b1', 1]
+    ];
+    let y = 48;
+    const lab = [];
+    vis.forEach(([ly, w, h, col, op]) => {
+      s += `<rect x="${cx - w / 2}" y="${y}" width="${w}" height="${h}" fill="${col}" fill-opacity="${op}" stroke="var(--ink)" stroke-opacity=".35"/>`;
+      lab.push([cx + w / 2, y + h / 2, `${esc(ly.name)} · ${fmt(ly.t / mm, 2)} mm, k ${fmt(ly.k, 0)}`]);
+      y += h;
+    });
+    const yb = y, hb = 30;
+    s += `<rect x="${xs0}" y="${yb}" width="${xw}" height="${hb}" fill="${CU}" fill-opacity=".9" stroke="var(--ink)" stroke-opacity=".35"/>`;
+    lab.push([xs0 + xw, yb + hb / 2, `열확산판·냉각기판 (${TC.MAT[c.baseMat].name}) · ${fmt(c.tBase / mm, 2)} mm`]);
+    lab.forEach(([x0, y0, tt], i) => {
+      const ly = 50 + i * 16;
+      s += `<polyline points="${x0 + 2},${y0} ${Math.max(x0 + 10, 588)},${ly - 4} 596,${ly - 4}" fill="none" stroke="var(--muted)" stroke-width=".8"/>` + T(600, ly, tt, { fs: 10.5 });
+    });
+    s += T(cx, 42, `칩 발열 Q = ${fmtS(c.Q)} W (${fmt(c.Q / (c.chipL * c.chipW) / 1e4, 0)} W/cm²)`, { a: 'middle', fs: 10.5, w: 600, c: 'var(--heat)' });
+    const yc = yb + hb;
+    let ybot, xp, pw, kD, dimLab;
+    if (t === 'A') {
+      const hc = 90;
+      s += `<rect x="${xs0}" y="${yc}" width="${xw}" height="${hc}" fill="var(--cool)" fill-opacity=".12"/>`;
+      const NL = info.NL, pitch = g.SL * sx; pw = Math.max(2, g.D * sx);
+      xp = k => xs0 + (k + 0.5) * pitch;
+      for (let k = 0; k < NL; k++) s += `<rect x="${xp(k) - pw / 2}" y="${yc}" width="${pw}" height="${hc}" fill="${CU}" fill-opacity=".8"/>`;
+      s += `<rect x="${xs0}" y="${yc + hc}" width="${xw}" height="12" fill="var(--muted)" fill-opacity=".45" stroke="var(--ink)" stroke-opacity=".3"/>`;
+      s += arrow(70, yc + hc - 14, xs0 - 2, yc + hc - 14, 'var(--cool)') + arrow(xs0 + xw + 2, yc + hc - 14, xs0 + xw + 58, yc + hc - 14, 'var(--hot)');
+      for (let k = 0; k < Math.min(NL - 1, 6); k++) { const xa = xp(k * Math.max(1, Math.floor(NL / 6))) + pw / 2 + 2; s += arrow(xa, yc + 30, xa + Math.max(pitch - pw - 6, 6), yc + 30, 'var(--cool)', .6); }
+      s += T(16, yc + hc - 44, '입구', { w: 600 }) + T(16, yc + hc - 30, ts('T', 'in', ` = ${fmt(P.Tin, 1)} °C`), { fs: 10.5, mono: 1 }) + T(16, yc + hc + 8, `V̇ = ${fmt(r.V * 6e4, 3)} L/min`, { fs: 10.5, mono: 1 });
+      s += T(xs0 + xw + 64, yc + hc - 10, ts('출구 T', 'out', ` = ${fmt(r.Tout, 1)} °C`), { fs: 10.5 });
+      s += T(600, yc + 22, `마이크로필라 (기판과 일체 가공, ${g.arr === 'stag' ? '엇갈림' : '정렬'})`, { fs: 10.5 });
+      s += T(600, yc + 40, `H = ${fmt(g.H / mm, 2)} mm (= 유로 높이)`, { fs: 10.5, mono: 1 });
+      s += T(600, yc + hc + 10, '커버 (필라 끝 밀착, 우회 없음)', { fs: 10.5 });
+      s += dimV(xp(NL - 1) + pw / 2 + Math.max((pitch - pw) / 2, 3), yc + 2, yc + hc - 2);
+      ybot = yc + hc + 12; kD = Math.min(3, NL - 1);
+      dimLab = [ts('S', 'L', ` = ${fmt(g.SL / mm, 2)}`), `D = ${fmt(g.D / mm, 2)}`];
+    } else {
+      const hj = 56, hpl = 14, hpn = 40;
+      const yn = yc + hj;
+      s += `<rect x="${xs0}" y="${yc}" width="${xw}" height="${hj}" fill="var(--cool)" fill-opacity=".12"/>`;
+      s += `<rect x="${xs0}" y="${yn + hpl}" width="${xw}" height="${hpn}" fill="var(--cool)" fill-opacity=".2"/>`;
+      const nx = info.nx, pitch = g.S * sx; pw = Math.max(3, g.d * sx);
+      xp = k => xs0 + (k + 0.5) * pitch;
+      if (t === 'C') {
+        const hp = hj * Math.min(g.Hpil / g.Hj, 0.9), np = Math.floor(c.L / g.Sp), dpw = Math.max(2, g.Dp * sx);
+        for (let k = 0; k < np; k++) {
+          const xx = (k + 0.5) * g.Sp, near = Math.abs(((xx % g.S) + g.S) % g.S - g.S / 2) < g.d;
+          if (!near) s += `<rect x="${xs0 + xx * sx - dpw / 2}" y="${yc}" width="${dpw}" height="${hp}" fill="${CU}" fill-opacity=".8"/>`;
+        }
+        s += T(600, yc + 10, `필라 ${ts('D', 'p', ` = ${fmt(g.Dp / mm, 2)}, `)}${ts('H', 'p', ` = ${fmt(g.Hpil / mm, 2)} mm`)} (제트 축 아래 제외)`, { fs: 10.5 });
+      }
+      s += `<rect x="${xs0}" y="${yn}" width="${xw}" height="${hpl}" fill="var(--muted)" fill-opacity=".5" stroke="var(--ink)" stroke-opacity=".3"/>`;
+      for (let k = 0; k < nx; k++) {
+        s += `<rect x="${xp(k) - pw / 2}" y="${yn}" width="${pw}" height="${hpl}" fill="var(--panel)"/>`;
+        s += arrow(xp(k), yn + hpl + 14, xp(k), yc + 4, 'var(--cool)');
+        if (g.exh !== 'side' || t === 'C') { s += arrow(xp(k) - 3, yc + 10, xp(k) - Math.min(pitch / 2 - 4, 30), yc + 22, 'var(--hot)', .6) + arrow(xp(k) + 3, yc + 10, xp(k) + Math.min(pitch / 2 - 4, 30), yc + 22, 'var(--hot)', .6); }
+      }
+      s += `<rect x="${xs0}" y="${yn + hpl + hpn}" width="${xw}" height="8" fill="var(--muted)" fill-opacity=".45"/>`;
+      s += arrow(70, yn + hpl + hpn - 10, xs0 - 2, yn + hpl + hpn - 10, 'var(--cool)') + arrow(xs0 + xw + 2, yc + 26, xs0 + xw + 58, yc + 26, 'var(--hot)');
+      s += T(16, yn + 4, '입구 (플레넘)', { w: 600 }) + T(16, yn + 20, ts('T', 'in', ` = ${fmt(P.Tin, 1)} °C`), { fs: 10.5, mono: 1 }) + T(16, yn + hpl + hpn + 12, `V̇ = ${fmt(r.V * 6e4, 3)} L/min`, { fs: 10.5, mono: 1 });
+      s += T(xs0 + xw + 64, yc + 30, ts('출구 T', 'out', ` = ${fmt(r.Tout, 1)} °C`), { fs: 10.5 });
+      s += T(600, yc + hj - 12, `제트-${t === 'C' ? '기판' : '표면'} 거리 H = ${fmt(g.Hj / mm, 2)} mm`, { fs: 10.5, mono: 1 });
+      s += T(600, yn + 11, `노즐판 (d = ${fmt(g.d / mm, 2)} mm, 길이 ${fmt(g.ln / mm, 2)} mm)`, { fs: 10.5 });
+      s += T(600, yn + hpl + hpn / 2 + 18, `공급 플레넘 (높이 ${fmt(g.Hp / mm, 1)} mm)`, { fs: 10.5 });
+      s += dimV(xs0 + xw - 6, yc + 2, yn - 2);
+      ybot = yn + hpl + hpn + 8; kD = Math.min(1, nx - 1);
+      dimLab = [`S = ${fmt(g.S / mm, 2)}`, `d = ${fmt(g.d / mm, 2)}`];
+    }
+    for (let i = -1; i <= 1; i++) s += arrow(cx + i * cw * 0.3, 52, cx + i * (cw * 0.3 + 70), yc + 20, 'var(--heat)', .55);
+    const yd = ybot + 28;
+    s += dimH(xp(0), xp(1), yd) + T((xp(0) + xp(1)) / 2, yd + 14, dimLab[0], { a: 'middle', fs: 10.5, mono: 1 });
+    const kd2 = t === 'A' ? kD : 2;
+    s += dimH(xp(kd2) - pw / 2, xp(kd2) + pw / 2, yd) + T(xp(kd2), yd + 14, dimLab[1], { a: 'middle', fs: 10.5, mono: 1 });
+    s += dimH(cx - cw / 2, cx + cw / 2, yd + 26) + T(cx, yd + 40, `칩 길이 ${fmt(c.chipL / mm, 1)} mm`, { a: 'middle', fs: 10.5, c: 'var(--heat)' });
+    s += dimH(xs0, xs0 + xw, yd + 52) + T(cx, yd + 66, `설치 면적 길이 L = ${fmt(c.L / mm, 1)} mm`, { a: 'middle', fs: 10.5 });
+    // 평면도
+    const py0 = yd + 96;
+    s += T(20, py0 - 8, `평면 배열 (설치 면적 L × W, 실제 비율)`, { fs: 12, w: 600 });
+    const s2 = 170 / Math.max(c.L, c.W), px0 = 60, ph0 = py0 + 6;
+    s += `<rect x="${px0}" y="${ph0}" width="${c.L * s2}" height="${c.W * s2}" fill="var(--cool)" fill-opacity=".1" stroke="var(--ink)" stroke-opacity=".4"/>`;
+    if (t === 'A') {
+      for (let j = 0; j < info.NL; j++) for (let i = 0; i < info.NT; i++) {
+        const off = (g.arr === 'stag' && j % 2) ? g.ST / 2 : 0, yy = (i + 0.5) * g.ST + off;
+        if (yy > c.W) continue;
+        s += `<circle cx="${px0 + (j + 0.5) * g.SL * s2}" cy="${ph0 + yy * s2}" r="${Math.max(g.D * s2 / 2, 1)}" fill="${CU}" fill-opacity=".8"/>`;
+      }
+    } else {
+      if (t === 'C') {
+        const n1 = Math.floor(c.L / g.Sp), n2 = Math.floor(c.W / g.Sp);
+        for (let i = 0; i < n1; i++) for (let j = 0; j < n2; j++) {
+          const xx = (i + 0.5) * g.Sp, yy = (j + 0.5) * g.Sp;
+          const dx = ((xx % g.S) + g.S) % g.S - g.S / 2, dy = ((yy % g.S) + g.S) % g.S - g.S / 2;
+          if (Math.hypot(dx, dy) < g.d) continue;
+          s += `<circle cx="${px0 + xx * s2}" cy="${ph0 + yy * s2}" r="${Math.max(g.Dp * s2 / 2, 1)}" fill="${CU}" fill-opacity=".7"/>`;
+        }
+      }
+      for (let i = 0; i < info.nx; i++) for (let j = 0; j < info.ny; j++) s += `<circle cx="${px0 + (i + 0.5) * g.S * s2}" cy="${ph0 + (j + 0.5) * g.S * s2}" r="${Math.max(g.d * s2 / 2, 2)}" fill="var(--cool)" stroke="var(--panel)"/>`;
+    }
+    s += `<rect x="${px0 + (c.L - c.chipL) / 2 * s2}" y="${ph0 + (c.W - c.chipW) / 2 * s2}" width="${c.chipL * s2}" height="${c.chipW * s2}" fill="none" stroke="var(--heat)" stroke-width="2" stroke-dasharray="5 3"/>`;
+    s += arrow(px0, ph0 + c.W * s2 + 16, px0 + 60, ph0 + c.W * s2 + 16, 'var(--cool)') + T(px0 + 66, ph0 + c.W * s2 + 20, t === 'A' ? '유동 방향' : '배출 방향', { fs: 10.5 });
+    const pxR = px0 + c.L * s2 + 14;
+    const pp = t === 'A' ? g.ST : g.S;
+    s += dimV(pxR, ph0 + 0.5 * pp * s2, ph0 + 1.5 * pp * s2) + T(pxR + 6, ph0 + pp * s2 + 4, t === 'A' ? ts('S', 'T', ` = ${fmt(g.ST / mm, 2)} mm`) : `S = ${fmt(g.S / mm, 2)} mm`, { fs: 10.5, mono: 1 });
+    const lx = 340, ly0 = py0 + 10;
+    const leg = [
+      ['<rect width="14" height="10" fill="var(--heat)" fill-opacity=".85"/>', '칩 (열원), 점선 = 칩 투영 위치'],
+      [`<rect width="14" height="10" fill="${CU}"/>`, t === 'B' ? '열확산판·냉각기판 (평탄 충돌면)' : '열확산판·필라 (같은 재질 일체)'],
+      ...(t !== 'A' ? [['<circle cx="7" cy="5" r="5" fill="var(--cool)"/>', '노즐 (평면도), 노즐판은 회색']] : []),
+      ['<line x1="0" y1="5" x2="14" y2="5" stroke="var(--heat)" stroke-width="2"/>', t === 'A' ? '열 흐름: 칩 → 패키지 → 확산판 → 필라 → 유체' : '열 흐름: 칩 → 패키지 → 확산판 → 충돌면 → 유체'],
+      ['<line x1="0" y1="5" x2="14" y2="5" stroke="var(--cool)" stroke-width="2"/>', t === 'A' ? '유체 흐름: 입구 → 필라 사이 → 출구' : '유체 흐름: 플레넘 → 노즐 → 충돌 → 배출'],
+      ['<line x1="0" y1="5" x2="14" y2="5" stroke="var(--hot)" stroke-width="2"/>', '데워진 유체 배출']
+    ];
+    leg.forEach(([sym, tt], i) => { s += `<g transform="translate(${lx},${ly0 + i * 20})">${sym}</g>` + T(lx + 22, ly0 + i * 20 + 9, tt, { fs: 11 }); });
+    const yk = ly0 + leg.length * 20 + 14;
+    const kv = t === 'A'
+      ? [[`필라 ${info.N}개 (${info.NT} × ${info.NL})`, `공극률 ε = ${fmt(info.porosity, 3)}`], [`젖은 면적비 = ${fmt(info.areaRatio, 2)}`, `유체: ${esc(TC.FLUIDS[r.cs.fluid].name)}`]]
+      : [[`노즐 ${info.N}개 (${info.nx} × ${info.ny})`, `H/d = ${fmt(info.Hd, 2)}${t === 'C' ? ' (필라 끝 기준)' : ''}`], [t === 'C' ? `필라 ${info.Np}개, 면적비 ${fmt(info.areaRatio, 2)}` : `노즐 유속 ${fmt(info.vj, 2)} m/s`, `유체: ${esc(TC.FLUIDS[r.cs.fluid].name)}`]];
+    kv.push([`Δp = ${fmt(r.dp / 1e3, 2)} kPa`, ts('T', 'j,max', ` = ${fmt(r.Tj, 1)} °C`)]);
+    kv.forEach(([a, b], i) => { s += T(lx, yk + i * 18, a, { fs: 11, mono: 1 }) + T(lx + 260, yk + i * 18, b, { fs: 11, mono: 1 }); });
+    const Hn = Math.max(ph0 + c.W * s2 + 30, yk + kv.length * 18 + 6);
+    return `<div class="tblwrap"><svg viewBox="0 0 ${Wd} ${Hn}" width="100%" style="min-width:640px" role="img" aria-label="${t}안 냉각 구조도">${s}</svg></div>`;
+  }
+  const ok = (b, t1 = '충족', t2 = '미달') => b ? `<span class="pill ok">✓ ${t1}</span>` : `<span class="pill b">✗ ${t2}</span>`;
+  const warnP = t => `<span class="pill w">! ${t}</span>`;
+  const vrow = (n, sym, v, u, why, st) => `<tr><td>${n}</td><td>${sym}</td><td class="n">${v}</td><td>${u}</td><td>${why}</td><td style="white-space:nowrap">${st || ''}</td></tr>`;
+  const grow = t => `<tr class="grp"><td colspan="6">${t}</td></tr>`;
+  function varRowsFor(t, P, r, dpLim) {
+    const g = P.geo[t], i = r.cr.info, out = [];
+    const tail = [
+      grow('유동·열전달 (현재 비교 기준)'),
+      vrow('유량', 'V̇', fmt(r.V * 6e4, 3), 'L/min', modeTxt(P), '')
+    ];
+    if (t === 'A') {
+      const a = g.ST / g.D, b = g.SL / g.D, HD = g.H / g.D, gap = r.cr.minGap;
+      out.push(grow('필라 형상 (입력)'),
+        vrow('필라 직경', 'D', fmt(g.D / mm, 2), 'mm', '작을수록 h↑, Δp↑. 가공 한계 약 0.2 mm 이상', ok(g.D >= 0.2e-3, '가공 가능', '가공 곤란')),
+        vrow('필라 높이 (= 유로 높이)', 'H', fmt(g.H / mm, 2), 'mm', '높을수록 젖은 면적↑, 핀 효율↓', ''),
+        vrow('횡방향 피치', `S${sb('T')}`, fmt(g.ST / mm, 2), 'mm', `a = S${sb('T')}/D ≥ 1.25 (Gaddis 압력손실식 범위)`, ok(a >= 1.25, '범위 내', '범위 밖')),
+        vrow('유동방향 피치', `S${sb('L')}`, fmt(g.SL / mm, 2), 'mm', `b = S${sb('L')}/D ≥ 1.25`, ok(b >= 1.25, '범위 내', '범위 밖')),
+        vrow('배열', '–', g.arr === 'stag' ? '엇갈림' : '정렬', '', '엇갈림은 h와 Δp가 모두 큼', ''),
+        vrow('헤더 높이', `H${sb('hdr')}`, fmt(g.Hhdr / mm, 1), 'mm', '클수록 분배 균일 (유량 균일도)', ''),
+        grow('필라 형상 (계산)'),
+        vrow('무차원 피치', 'a, b', `${fmt(a, 2)}, ${fmt(b, 2)}`, '–', `a = S${sb('T')}/D, b = S${sb('L')}/D`, ''),
+        vrow('종횡비', 'H/D', fmt(HD, 2), '–', '2 미만이면 끝벽 효과로 상관식 오차 큼', HD >= 2 ? ok(true, '양호') : warnP('오차 주의')),
+        vrow('공극률', 'ε', fmt(i.porosity, 3), '–', `ε = 1 − πD²/(4S${sb('T')}S${sb('L')})`, ''),
+        vrow('필라 수', `N (N${sb('T')} × N${sb('L')})`, `${i.N} (${i.NT} × ${i.NL})`, '개', `N${sb('L')} ≥ 16이면 행수 보정 C${sb('2')} = 1`, ''),
+        vrow('젖은 면적비', `A${sb('wet')}/(L·W)`, fmt(i.areaRatio, 2), '–', '평탄면 대비 면적 증가 배수', ''),
+        vrow('최소 간극', `g${sb('min')}`, fmt(gap / mm, 3), 'mm', '0.15 mm 미만이면 막힘 위험', ok(gap >= 0.15e-3, '양호', '막힘 위험')));
+      out.push(...tail,
+        vrow('입구 유속', `u${sb('in')}`, fmt(i.uin, 3), 'm/s', 'V̇/(W·H)', ''),
+        vrow('최대 유속', `u${sb('max')}`, fmt(i.umax, 3), 'm/s', '최소 단면 기준', ''),
+        vrow('레이놀즈 수', `Re${sb('D')}`, fmtS(r.cr.Re), '–', 'Zukauskas 적용범위 1 ~ 2×10⁵', ok(r.cr.Re >= 1 && r.cr.Re <= 2e5, '범위 내', '범위 밖')),
+        vrow('누셀트 수', `Nu${sb('D')}`, fmt(r.cr.Nu, 2), '–', `C·Re${sb('D')}<sup>m</sup>·Pr<sup>0.36</sup>·(Pr/Pr${sb('s')})<sup>0.25</sup>·C${sb('2')}`, ''),
+        vrow('열전달계수', 'h', fmtS(r.cr.h), 'W/m²K', `Nu${sb('D')}·k/D`, ''),
+        vrow('핀 효율', 'η', fmt(r.cr.eta, 3), '–', 'tanh(mH)/(mH), 끝단 단열', r.cr.eta >= 0.7 ? ok(true, '양호') : warnP('핀 효율 낮음')));
+    } else {
+      const Hd = g.Hj / g.d, Sd = g.S / g.d, f = i.f, n = i.noz;
+      out.push(grow('노즐·제트 형상 (입력)'),
+        vrow('노즐 직경', 'd', fmt(g.d / mm, 2), 'mm', '작을수록 제트 속도·h↑, Δp↑', ok(g.d >= 0.2e-3, '가공 가능', '가공 곤란')),
+        vrow('노즐 간격 (정사각 배열)', 'S', fmt(g.S / mm, 2), 'mm', '노즐 1개가 맡는 면적 = S²', ''),
+        vrow(t === 'C' ? '제트-기판 거리' : '제트-표면 거리', 'H', fmt(g.Hj / mm, 2), 'mm', 'Martin 적용범위 H/d = 2 ~ 12', ''),
+        vrow('노즐 길이 (노즐판 두께)', `l${sb('n')}`, fmt(g.ln / mm, 2), 'mm', '길수록 마찰 손실↑', ''),
+        vrow('노즐 내벽 조도', `ε${sb('w')}`, fmt(g.rough / 1e-6, 1), 'µm', '난류일 때만 마찰에 영향', ''),
+        vrow('노즐 입구 형상', `K${sb('in')}`, fmt(n.Kin, 2), '–', { sharp: '날카로움', chamfer: '모따기', round: '라운딩' }[g.inlet] || '', ''),
+        vrow('공급 플레넘 높이', `H${sb('p')}`, fmt(g.Hp / mm, 1), 'mm', '클수록 노즐별 유량 균일', ''));
+      if (t === 'B') out.push(vrow('배출 방식', '–', g.exh === 'side' ? '측면 배출' : '분산 회수', '', '측면 배출은 교차류로 h 감소', ''));
+      if (t === 'C') out.push(
+        grow('필라 형상 (입력)'),
+        vrow('필라 직경', `D${sb('p')}`, fmt(g.Dp / mm, 2), 'mm', '', ok(g.Dp >= 0.2e-3, '가공 가능', '가공 곤란')),
+        vrow('필라 높이', `H${sb('p')}`, fmt(g.Hpil / mm, 2), 'mm', '제트-필라 끝 간격 ≥ 0.1 mm 필요', ok(g.Hj - g.Hpil > 0.1e-3, `간격 ${fmt((g.Hj - g.Hpil) / mm, 2)} mm`, '간격 부족')),
+        vrow('필라 피치 (정렬)', `S${sb('p')}`, fmt(g.Sp / mm, 2), 'mm', '', ''),
+        vrow('벽면제트 감쇠계수', 'χ', fmt(g.chi, 2), '–', '가정값 (문헌·CFD 보정 필요)', warnP('가정값')));
+      out.push(grow('형상 (계산)'),
+        vrow(t === 'C' ? '무차원 거리 (필라 끝 기준)' : '무차원 거리', 'H/d', fmt(i.Hd, 2), '–', 'Martin 범위 2 ~ 12', ok(i.Hd >= 2 && i.Hd <= 12, '범위 내', '범위 밖')),
+        vrow('무차원 간격', 'S/d', fmt(Sd, 2), '–', '', ''),
+        vrow('상대 노즐면적', 'f', fmt(f, 4), '–', 'f = πd²/(4S²), Martin 범위 0.004 ~ 0.04', ok(f >= 0.004 && f <= 0.04, '범위 내', '범위 밖')),
+        vrow('노즐 수', `N (n${sb('x')} × n${sb('y')})`, `${i.N} (${i.nx} × ${i.ny})`, '개', '', ''));
+      if (t === 'C') out.push(
+        vrow('필라 수', `N${sb('p')}`, i.Np, '개', '제트 축 아래 필라 제외', ''),
+        vrow('필라 공극률', 'ε', fmt(i.porosity, 3), '–', `1 − πD${sb('p')}²/(4S${sb('p')}²)`, ''),
+        vrow('젖은 면적비', `A${sb('wet')}/(L·W)`, fmt(i.areaRatio, 2), '–', '', ''),
+        vrow('보정 핀 길이', `L${sb('c')}`, fmt(i.Lc / mm, 2), 'mm', `H${sb('p')} + D${sb('p')}/4 (끝단 대류 근사)`, ''));
+      out.push(vrow('최소 간극', `g${sb('min')}`, fmt(r.cr.minGap / mm, 3), 'mm', '0.15 mm 미만이면 막힘 위험', ok(r.cr.minGap >= 0.15e-3, '양호', '막힘 위험')));
+      out.push(...tail,
+        vrow('노즐 출구 유속', `v${sb('j')}`, fmt(i.vj, 2), 'm/s', 'V̇/(N·πd²/4)', ''),
+        vrow('제트 레이놀즈 수', `Re${sb('j')}`, fmtS(r.cr.Re), '–', `Martin 범위 2000 ~ 10⁵ · 노즐 내부 ${n.regime}`, ok(r.cr.Re >= 2000 && r.cr.Re <= 1e5, '범위 내', '외삽')),
+        vrow('누셀트 수', 'Nu', fmt(r.cr.Nu, 2), '–', 'Martin (1977) 노즐 배열 평균', ''),
+        vrow('열전달계수', 'h', fmtS(r.cr.h), 'W/m²K', t === 'C' ? 'Nu·k/d × χ' : 'Nu·k/d', ''));
+      if (t === 'C') out.push(vrow('핀 효율', 'η', fmt(r.cr.eta, 3), '–', `tanh(mL${sb('c')})/(mL${sb('c')})`, r.cr.eta >= 0.7 ? ok(true, '양호') : warnP('핀 효율 낮음')));
+      out.push(vrow('노즐 손실', `Δp${sb('noz')}`, fmt(r.cr.dpCore / 1e3, 3), 'kPa', '입구 K + 마찰 + 출구 동압', ''));
+    }
+    out.push(
+      vrow('유효 열전달계수', `h${sb('eff')}`, fmtS(r.cr.heff), 'W/m²K', '설치 면적 기준', ''),
+      vrow('압력강하', 'Δp', fmt(r.dp / 1e3, 2), 'kPa', `허용 ${fmtS(dpLim / 1e3)} kPa 이하`, ok(r.dp <= dpLim * 1.001, '허용 내', '초과')),
+      vrow('펌프 동력', `W${sb('pump')}`, fmt(r.W, 4), 'W', `Δp·V̇/η${sb('pump')}`, ''));
+    return out.join('');
+  }
+  function renderAdev() {
+    const { P, res, ref, sc } = S, Wt = S.W;
+    const t = adSel;
+    const c = P.common;
+    const byT = k => res.find(r => r.cs.type === k);
+    const rX = byT(t);
+    const Achip = c.chipL * c.chipW;
+    const fl = TC.FLUIDS[P.fluids.sp1];
+    const dpLim = num('tDp') * 1e3;
+    const tjLim = TJ_LIM - TJ_MARGIN;
+    const all = res.concat([ref]);
+    const R = rX.R, Q = c.Q, Rt = rX.Rth;
+    const convTxt = { A: '필라 표면 → 절연유체', B: '제트 충돌면 → 절연유체', C: '제트 충돌면 + 필라 표면 → 절연유체' }[t];
+    const calTxt = t === 'A' ? '하류로 갈수록 유체 온도 상승' : '칩 위치마다 새 유체 공급 (작음)';
+    const pathRows = [
+      ['패키지 전도', `다이 → 접합 → DBC → 기판 접합 (${R.layers.length}층)`, `R${sb('pkg')}`, R.Rpkg, '아니오 (공통 조건)'],
+      ['확산판 전도', '냉각기판 두께 방향 1D 전도', `R${sb('1D')}`, R.R1D, '아니오'],
+      ['확산', '칩 면적 → 설치 면적으로 퍼짐', `R${sb('sp')}`, R.Rsp, `일부 (h${sb('eff')}가 Biot 수를 바꿈)`],
+      ['대류', convTxt, `R${sb('conv')} = 1/(h${sb('eff')}·L·W)`, R.Rconv, `<b>예 (${t}안 핵심 개선 구간)</b>`],
+      ['유체 승온', calTxt, `R${sb('cal')}`, R.Rcal, '예 (유량·배출 방식에 따라)']
+    ].map(([a, b, sym, v, ch]) => `<tr><td>${a}</td><td>${b}</td><td>${sym}</td><td class="n">${fmt(v, 4)}</td><td class="n">${fmt(v * Q, 1)}</td><td class="n">${fmt(v / Rt * 100, 0)}%</td><td>${ch}</td></tr>`).join('');
+    const cmpRows = all.map(r => `<tr class="${r === rX ? 'best' : ''}"><td style="white-space:nowrap">${sw(r.cs)}<b>${r.cs.id}</b></td><td>${TYPES[r.cs.type].name}${r.cs.type === 'REF' ? ' <span class="note">(개선 효과 비교용)</span>' : ''}</td>
+      <td class="n">${fmt(r.V * 6e4, 3)}</td><td class="n">${fmt(r.dp / 1e3, 2)}</td><td class="n">${fmt(r.W, 4)}</td><td class="n"><b>${fmt(r.Tj, 1)}</b></td><td class="n">${fmt(r.dev, 1)}</td>
+      <td class="n">${fmt(r.Rth, 3)}</td><td class="n">${fmt(r.Rth * Achip * 1e6, 1)}</td><td class="n">${fmt(r.cr.uniform * 100, 0)}%</td><td class="n">${r === rX ? '–' : (r.Tj - rX.Tj >= 0 ? '+' : '') + fmt(r.Tj - rX.Tj, 1) + ' K'}</td></tr>`).join('');
+    const ix = ['A', 'B', 'C'].indexOf(t);
+    const modes = [['power', num('tW'), `동일 펌프동력 ${fmtS(num('tW'))} W`], ['dp', dpLim, `공통 Δp ${fmtS(dpLim / 1e3)} kPa`], ['flow', num('tV') / 6e4, `동일 유량 ${fmtS(num('tV'))} L/min`]];
+    const modeRows = modes.map(([m, tg, nm]) => {
+      const rr = all.map(r => TC.solve(r.cs, P, m, tg));
+      const rk = rr.slice(0, 3).map(x => x.Tj).sort((a, b) => a - b).indexOf(rr[ix].Tj) + 1;
+      return `<tr class="${m === P.mode ? 'best' : ''}"><td>${nm}${m === P.mode ? ' <span class="pill ok">기본</span>' : ''}</td>${rr.map(x => `<td class="n">${fmt(x.Tj, 1)}</td>`).join('')}<td class="n">${rk}위 / 3</td></tr>`;
+    }).join('');
+    const varRows = varRowsFor(t, P, rX, dpLim);
+    const fRows = Object.entries(TC.FLUIDS).filter(([k]) => k !== 'custom').map(([k, f]) => {
+      const r = TC.solve({ id: t, type: t, fluid: k, fi: 1, label: t, long: '' }, P, P.mode, P.target);
+      return { k, f, r, pr: TC.props1p(f, P.Tin), diel: f.diel >= 3 };
+    });
+    const bestF = fRows.filter(x => x.diel).reduce((m, x) => (!m || x.r.Tj < m.r.Tj) ? x : m, null);
+    const fluidRows = fRows.sort((x, y) => (y.diel - x.diel) || (x.r.Tj - y.r.Tj)).map(x => {
+      const f = x.f, r = x.r, fm = f.flashC ? f.flashC - r.Tout : null;
+      return `<tr class="${x.k === P.fluids.sp1 ? 'best' : ''}"><td><b>${esc(f.name)}</b>${x.k === P.fluids.sp1 ? ' <span class="pill ok">선택</span>' : ''}${x === bestF ? ` <span class="pill w">최저 T${sb('j')}</span>` : ''}<div class="note">${esc(f.full)}</div></td>
+        <td class="n">${fmt(x.pr.rho, 0)}</td><td class="n">${fmt(x.pr.cp, 0)}</td><td class="n">${fmt(x.pr.k, 3)}</td><td class="n">${fmt(x.pr.mu * 1e3, 2)}</td><td class="n">${fmt(x.pr.Pr, 0)}</td>
+        <td>${x.diel ? '' : '<span class="pill b">비절연</span> '}${esc(f.dielTxt)}</td><td>${esc(f.compat)}</td>
+        <td>인화점 ${esc(f.flash)}${fm !== null ? `<div class="note">출구온도 대비 ${fmt(fm, 0)} K 여유</div>` : ''}</td>
+        <td class="n">${fmt(r.V * 6e4, 3)} L/min<br>${fmt(r.dp / 1e3, 2)} kPa<br><span class="note">${fmt(P.Tin, 0)}→${fmt(r.Tout, 1)} °C</span></td>
+        <td class="n"><b>${fmt(r.Tj, 1)}</b></td><td class="note">${f.url ? `<a href="${f.url}">${esc(f.src)}</a>` : esc(f.src)}</td></tr>`;
+    }).join('');
+    const cand = ['A', 'B', 'C'].map(byT);
+    const req = [
+      [`T${sb('j,max')} ≤ ${tjLim} °C (${TJ_LIM} °C − 여유 ${TJ_MARGIN} K)`, r => r.Tj <= tjLim],
+      [`Δp ≤ ${fmtS(dpLim / 1e3)} kPa (허용 압력강하)`, r => r.dp <= dpLim * 1.001],
+      ['최소 간극 ≥ 0.15 mm (막힘)', r => r.cr.minGap >= 0.15e-3],
+      ['절연유체 사용 (직접냉각 가능)', () => fl.diel >= 3],
+      ['비교 기준의 유량을 찾음 (목표 미달 아님)', r => !r.limited]
+    ];
+    const hl = k => k === t ? ' style="background:var(--good-soft)"' : '';
+    const reqRows = req.map(([n, f]) => `<tr><td>${n}</td>${cand.map(r => `<td${hl(r.cs.type)}>${ok(f(r))}</td>`).join('')}</tr>`).join('')
+      + `<tr><td>상관식 적용범위 경고</td>${cand.map(r => `<td${hl(r.cs.type)}>${r.warn.length ? warnP(r.warn.length + '건') : ok(true, '없음')}</td>`).join('')}</tr>`;
+    const passX = req.every(([, f]) => f(rX));
+    const passAll = cand.map(r => req.every(([, f]) => f(r)));
+    const ranked = sc.filter(x => x.r.feasible).sort((x, y) => y.total - x.total);
+    const rowX = sc.find(x => x.r === rX), rankX = ranked.indexOf(rowX) + 1, top = ranked[0];
+    const scRows = TC.CRIT.map(cr => `<tr><td>${cr.name}</td><td class="n">${Wt[cr.key]}</td>${['A', 'B', 'C'].map(k => `<td class="n"${hl(k)}>${fmt(sc.find(x => x.r.cs.type === k).s[cr.key], 1)}</td>`).join('')}</tr>`).join('')
+      + `<tr><td><b>총점 (100점 환산)</b></td><td class="n">${Object.values(Wt).reduce((x, y) => x + y, 0)}</td>${['A', 'B', 'C'].map(k => { const row = sc.find(x => x.r.cs.type === k); return `<td class="n"${hl(k)}><b>${fmt(row.total, 1)}</b> <span class="note">${ranked.indexOf(row) + 1}위</span></td>`; }).join('')}</tr>`;
+    let keep = 0, tot = 0, keepX = 0;
+    const flips = [];
+    TC.CRIT.forEach(cr => [0.5, 2].forEach(m => {
+      const w2 = Object.assign({}, Wt, { [cr.key]: Wt[cr.key] * m });
+      const t2 = TC.score(res, w2, P).filter(x => x.r.feasible).sort((x, y) => y.total - x.total);
+      tot++; if (t2[0].r.cs.id === top.r.cs.id) keep++; else flips.push(`${cr.name} ×${m} → ${t2[0].r.cs.id}`);
+      if (t2[0].r.cs.type === t) keepX++;
+    }));
+    const presets = [
+      ['열성능 중시', { Tj: 35, dev: 15, Rth: 15, uniform: 10, dp: 5, W: 5, clog: 5, fab: 5, diel: 5, cost: 0 }],
+      ['제작·비용 중시', { Tj: 10, dev: 5, Rth: 5, uniform: 5, dp: 5, W: 5, clog: 15, fab: 25, diel: 5, cost: 20 }],
+      ['신뢰성 중시', { Tj: 10, dev: 10, Rth: 5, uniform: 20, dp: 5, W: 5, clog: 25, fab: 5, diel: 15, cost: 0 }],
+      ['균등 가중', Object.fromEntries(TC.CRIT.map(cr => [cr.key, 10]))]
+    ].map(([n, w]) => { const t2 = TC.score(res, w, P).filter(x => x.r.feasible).sort((x, y) => y.total - x.total); return `<tr><td>${n}</td><td>${t2[0].r.cs.id}</td><td class="n">${t2.findIndex(x => x.r.cs.type === t) + 1}위</td></tr>`; }).join('');
+    const opRows = [['기준', {}], ['Q +20%', { Q: 1.2 }], ['Q −20%', { Q: 0.8 }], [`T${sb('in')} +10 K`, { dT: 10 }], [`T${sb('in')} −10 K`, { dT: -10 }], ['비교 목표값 ×0.5', { tg: 0.5 }]].map(([n, m]) => {
+      const P2 = JSON.parse(JSON.stringify(P));
+      if (m.Q) P2.common.Q *= m.Q; if (m.dT) P2.Tin += m.dT; if (m.tg) P2.target *= m.tg;
+      const rr = ['A', 'B', 'C'].map(k => TC.solve(S.cases.find(x => x.type === k), P2, P2.mode, P2.target));
+      const best = rr.reduce((x, y) => y.Tj < x.Tj ? y : x), me = rr[ix];
+      return `<tr><td>${n}</td><td class="n">${fmt(me.Tj, 1)}</td><td>${ok(me.Tj <= tjLim && me.dp <= dpLim * 1.001, '합격', '불합격')}</td><td>${best.cs.id} <span class="note">${fmt(best.Tj, 1)} °C</span></td></tr>`;
+    }).join('');
+    const dConv = (1 - rX.R.Rconv / ref.R.Rconv) * 100;
+    const step = (n, tt, st) => `<div class="stp"><div class="stp-n">${n}</div><div class="stp-t">${tt}</div><div>${st}</div></div>`;
+    const decision = rankX === 1 && passX
+      ? `${t}안이 필수조건을 모두 충족하고 가중 점수 1위(${fmt(rowX.total, 1)}점)이므로 ${t}안을 선정한다.`
+      : !passX ? `${t}안은 필수조건을 충족하지 못한다. 형상이나 비교 기준을 바꿔 다시 판정해야 한다.`
+        : `${t}안은 필수조건을 모두 충족하지만 가중 점수는 ${rankX}위(${fmt(rowX.total, 1)}점, 1위 ${top.r.cs.id} ${fmt(top.total, 1)}점)이다. ${t}안을 고른다면 점수 차이 ${fmt(top.total - rowX.total, 1)}점을 넘는 근거(제작성·신뢰성 등)를 함께 제시해야 한다.`;
+    const risks = TYPE_CONS[t].concat(rX.warn).map(x => `<li>${subFix(esc(x))}</li>`).join('');
+    const geoTxt = { A: `필라 D, H, S${sb('T')}, S${sb('L')}, 배열, 공극률과 적용범위 판정`, B: '노즐 d, 간격 S, 제트-표면 거리 H, H/d, f와 적용범위 판정', C: `노즐 d, S, H와 필라 D${sb('p')}, H${sb('p')}, S${sb('p')}, 공극률, 적용범위 판정` }[t];
+    const delivs = [
+      ['냉각 구조도', '칩·열확산판·필라/노즐·유체 입출구·유로 및 열전달 방향', 'ad-1', '단면도·평면도, 열·유체 흐름 화살표, 열전달 경로 표'],
+      ['공정 비교표', '동일조건에서의 최고온도, 온도편차, 열저항, 압력강하, 펌프동력', 'ad-2', 'A·B·C·기준 동일 조건 비교, 비교 기준 3종'],
+      [t === 'A' ? '필라 설계변수표' : t === 'B' ? '제트 설계변수표' : '필라/제트 설계변수표', '필라 치수·피치·공극률 또는 노즐 치수·간격·제트 거리', 'ad-3', geoTxt],
+      ['유체 선정표', '열물성, 절연성, 재료적합성, 안전성, 사용조건 및 출처', 'ad-4', `후보 유체별 물성과 ${t}안 적용 결과`],
+      ['선정 근거', '평가기준·가중치·민감도 결과, 선택 이유와 남은 위험', 'ad-5', '판단순서 5단계, 점수·민감도, 결론과 남은 위험']
+    ];
+    const pick = ['A', 'B', 'C'].map(k => `<button class="adpick" data-ad="${k}" aria-pressed="${k === t}"><span class="sw" style="background:${TYPES[k].color}"></span><b>${k}</b> ${TYPES[k].name}</button>`).join('');
+    $('#v-adev').innerHTML = `
+      <div class="card"><h2>예비설계 산출물</h2>
+        <div class="adpicks" role="group" aria-label="냉각안 선택">${pick}</div>
+        <p>선택한 냉각안: <b>${t}안 · ${TYPES[t].name}</b>. 과제 PDF의 예비설계 필수 제출물 5종을 이 냉각안 기준으로 아래에 모두 펼쳐 두었습니다. 값은 왼쪽 입력과 연동됩니다.</p>
+        <div class="tblwrap"><table><thead><tr><th>산출물</th><th>포함 내용 (PDF)</th><th>${t}안에서 들어간 내용</th><th></th></tr></thead><tbody>
+        ${delivs.map(([n, d, id, w], i) => `<tr><td><b>${'①②③④⑤'[i]} ${n}</b></td><td>${d}</td><td>${w}</td><td><button class="btn" data-jump="${id}">보기</button></td></tr>`).join('')}
+        </tbody></table></div>
+        <p class="note" style="margin-top:8px"><b>1단계 예비설계</b>에서 선정한 냉각 구조는 2단계 통합 시스템의 인버터 냉각부에 적용한다. 공통 조건: ${modeTxt(P)}, Q ${fmtS(c.Q)} W, 칩 ${fmt(c.chipL / mm, 1)}×${fmt(c.chipW / mm, 1)} mm, 설치 면적 ${fmt(c.L / mm, 1)}×${fmt(c.W / mm, 1)} mm, T${sb('in')} ${fmt(P.Tin, 0)} °C, 유체 ${esc(fl.name)}.</p></div>
+
+      <div class="card" id="ad-1"><h2>① 냉각 구조도 · ${t}안</h2>
+        <p>${t === 'A' ? '칩에서 나온 열은 패키지와 열확산판을 지나 필라 표면에서 절연유체로 넘어갑니다. 유체는 입구에서 필라 사이를 지나 출구로 나가며, 커버가 필라 끝을 막아 우회 유동이 없습니다.'
+          : t === 'B' ? '유체는 공급 플레넘에서 노즐판을 지나 제트로 냉각기판 바닥에 부딪힙니다. 충돌점의 얇은 경계층이 열을 빠르게 가져가고, 데워진 유체는 ' + (P.geo.B.exh === 'side' ? '측면으로 배출됩니다.' : '노즐 사이로 회수됩니다.')
+          : '제트가 필라 사이 바닥에 부딪힌 뒤 필라 사이로 퍼져 나갑니다. 제트의 높은 h와 필라의 넓은 면적을 함께 씁니다. 제트 축 바로 아래에는 필라를 두지 않습니다.'}</p>
+        ${adevSVG(P, rX, t)}
+        <h3 style="margin-top:10px">열전달 경로와 ${t}안이 바꾸는 구간</h3>
+        <div class="tblwrap"><table><thead><tr><th>구간</th><th>경로</th><th>기호</th><th class="n">R K/W</th><th class="n">ΔT K</th><th class="n">비율</th><th>${t}안이 바꾸나</th></tr></thead><tbody>${pathRows}
+        <tr class="best"><td colspan="3"><b>합계 R${sb('th,j-f')}</b> → T${sb('j,max')} = T${sb('in')} + Q·R${sb('th')}</td><td class="n"><b>${fmt(Rt, 4)}</b></td><td class="n"><b>${fmt(Rt * Q, 1)}</b></td><td class="n">100%</td><td>T${sb('j,max')} = <b>${fmt(rX.Tj, 1)} °C</b></td></tr></tbody></table></div>
+        <p class="note">대류 저항은 같은 조건의 평탄 미세유로(기준) 대비 ${fmt(dConv, 0)}% ${dConv >= 0 ? '작습니다' : '큽니다'}.</p></div>
+
+      <div class="card" id="ad-2"><h2>② 공정 비교표</h2>
+        <p>같은 칩 발열량, 유체, 입구온도, 설치 면적, 패키지 조건에서 비교했습니다. 기본 비교 기준은 ${modeTxt(P)}이고, 초록 줄이 선택한 ${t}안입니다.</p>
+        <div class="tblwrap"><table><thead><tr><th>경우</th><th>냉각 구조</th><th class="n">유량 L/min</th><th class="n">압력강하 kPa</th><th class="n">펌프동력 W</th><th class="n">최고온도 T${sb('j,max')} °C</th><th class="n">온도편차 K</th><th class="n">열저항 R${sb('th,j-f')} K/W</th><th class="n">R″ mm²K/W</th><th class="n">유량 균일도</th><th class="n">${t} 대비 T${sb('j')}</th></tr></thead><tbody>${cmpRows}</tbody></table></div>
+        <h3 style="margin-top:10px">비교 기준을 바꿔도 ${t}안의 위치는?</h3>
+        <div class="tblwrap"><table><thead><tr><th>비교 기준</th>${all.map(r => `<th class="n">${r.cs.id} T${sb('j')} °C</th>`).join('')}<th class="n">${t} 순위 (A·B·C)</th></tr></thead><tbody>${modeRows}</tbody></table></div>
+        <p class="note">R″ = R${sb('th')} × 칩 면적. 기준(REF)은 필라·제트 없는 평탄 미세유로로, 후보가 아니라 개선 효과를 보이기 위한 비교 대상입니다.</p></div>
+
+      <div class="card" id="ad-3"><h2>③ ${delivs[2][0]}</h2>
+        <p>${t === 'A' ? 'A안은 필라 배열이므로 필라 치수·피치·공극률을 제시합니다.' : t === 'B' ? 'B안은 제트이므로 노즐 치수·간격·제트-표면 거리를 제시합니다.' : 'C안은 제트와 필라를 함께 쓰므로 노즐 변수와 필라 변수를 모두 제시합니다.'} 판정은 상관식 적용범위와 제작·막힘 기준입니다.</p>
+        <div class="tblwrap"><table><thead><tr><th>변수</th><th>기호</th><th class="n">값</th><th>단위</th><th>정의·결정 근거</th><th>판정</th></tr></thead><tbody>${varRows}</tbody></table></div></div>
+
+      <div class="card" id="ad-4"><h2>④ 유체 선정표</h2>
+        <p>후보 유체마다 ${t}안 형상을 그대로 두고 같은 비교 기준(${modeTxt(P)})으로 다시 계산했습니다. 물성은 T${sb('in')} = ${fmt(P.Tin, 0)} °C, 1 atm 값입니다.</p>
+        <div class="tblwrap"><table style="min-width:1150px"><thead><tr><th>유체</th><th class="n">ρ kg/m³</th><th class="n">c${sb('p')} J/kg·K</th><th class="n">k W/m·K</th><th class="n">μ mPa·s</th><th class="n">Pr</th><th>절연성</th><th>재료 적합성</th><th>안전성</th><th class="n">사용조건 (유량·Δp·온도)</th><th class="n">${t}안 T${sb('j,max')} °C</th><th>출처</th></tr></thead><tbody>${fluidRows}</tbody></table></div>
+        <p class="note">초록 줄 = 현재 선택 유체. 물-EG 50%는 전도성이라 직접냉각에 쓸 수 없으며 비교용으로만 표시했습니다. 동일 펌프동력 비교에서는 점도가 낮은 유체가 더 많은 유량을 흘려 유리합니다.</p></div>
+
+      <div class="card" id="ad-5"><h2>⑤ 선정 근거 · ${t}안</h2>
+        <h3>판단순서</h3>
+        <div class="stps">
+          ${step(1, '조건 고정', ok(true, '공통 조건'))}
+          ${step(2, '필수조건 판정', ok(passX, `${t} 합격`, `${t} 불합격`))}
+          ${step(3, '가중 점수', rankX === 1 ? ok(true, `${t} 1위`) : warnP(`${t} ${rankX}위`))}
+          ${step(4, '민감도', keepX === tot ? ok(true, `${t} 1위 유지`) : keepX === 0 ? warnP(`${t} 1위 없음`) : warnP(`${t} 1위 ${keepX}/${tot}`))}
+          ${step(5, '선정·남은 위험', rankX === 1 && passX ? ok(true, `${t} 선정`) : warnP('추가 근거 필요'))}
+        </div>
+        <div class="grid2">
+          <div><h3>1. 조건 고정</h3><ul class="tight"><li>칩 발열 ${fmtS(c.Q)} W, 칩 ${fmt(c.chipL / mm, 1)}×${fmt(c.chipW / mm, 1)} mm, 설치 면적 ${fmt(c.L / mm, 1)}×${fmt(c.W / mm, 1)} mm</li><li>T${sb('in')} ${fmt(P.Tin, 0)} °C, 패키지 ${c.layers.length}층 동일, 유체 ${esc(fl.name)}</li><li>비교 기준: ${modeTxt(P)}</li></ul></div>
+          <div><h3>2. 필수조건 (하나라도 미달이면 탈락)</h3><div class="tblwrap"><table><thead><tr><th>조건</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>${reqRows}</tbody></table></div>
+            <p class="note">필수조건 통과: ${cand.map((r, i) => `${r.cs.id} ${passAll[i] ? '✓' : '✗'}`).join(', ')}</p></div>
+        </div>
+        <h3 style="margin-top:10px">3. 가중 점수 (평가기준·가중치)</h3>
+        <div class="tblwrap"><table><thead><tr><th>평가기준</th><th class="n">가중치</th><th class="n">A</th><th class="n">B</th><th class="n">C</th></tr></thead><tbody>${scRows}</tbody></table></div>
+        <p class="note">항목 점수 1~5점. 가중치는 「5) 가중치 평가표」 탭에서 바꿀 수 있습니다.</p>
+        <h3 style="margin-top:10px">4. 민감도</h3>
+        <div class="grid2">
+          <div><p>가중치를 항목별로 ×0.5, ×2로 바꾼 ${tot}가지 중 1위(${top.r.cs.id})가 유지된 경우는 <b>${keep}가지</b>, ${t}안이 1위인 경우는 <b>${keepX}가지</b>입니다.</p>${flips.length ? `<p class="note">1위가 바뀐 경우: ${flips.join(', ')}</p>` : ''}
+            <div class="tblwrap"><table><thead><tr><th>우선순위 시나리오</th><th>1위</th><th class="n">${t} 순위</th></tr></thead><tbody>${presets}</tbody></table></div></div>
+          <div><div class="tblwrap"><table><thead><tr><th>운전조건 변화</th><th class="n">${t} T${sb('j,max')} °C</th><th>${t} 필수조건</th><th>최저 T${sb('j')}</th></tr></thead><tbody>${opRows}</tbody></table></div></div>
+        </div>
+        <h3 style="margin-top:10px">5. 결론, 선택 이유와 남은 위험</h3>
+        <div class="card ${rankX === 1 && passX ? 'winner' : ''}" style="margin-bottom:10px"><p style="max-width:none"><b>${decision}</b></p></div>
+        <div class="grid2">
+          <div><h3>선택 이유</h3><ul class="tight">${TYPE_PROS[t].map(x => `<li>${subFix(x)}</li>`).join('')}<li>대류 저항이 평탄 미세유로 대비 ${fmt(dConv, 0)}% ${dConv >= 0 ? '감소' : '증가'}, T${sb('j,max')}는 ${fmt(Math.abs(ref.Tj - rX.Tj), 1)} K ${ref.Tj >= rX.Tj ? '낮음' : '높음'}</li><li>압력강하 ${fmt(rX.dp / 1e3, 2)} kPa (허용 ${fmtS(dpLim / 1e3)} kPa ${rX.dp <= dpLim * 1.001 ? '이내' : '초과'})</li></ul></div>
+          <div><h3>남은 위험</h3><ul class="warnlist">${risks}<li>상관식 기반 1차 설계이므로 CFD 또는 시험으로 확인 필요</li></ul></div>
+        </div>
+        <h3 style="margin-top:10px">2단계로 넘길 값 (칩 1개 단위셀)</h3>
+        <div class="tblwrap"><table><tbody>
+          <tr><td>열저항 R${sb('th,j-f')}</td><td class="n">${fmt(rX.Rth, 3)} K/W</td><td>유량</td><td class="n">${fmt(rX.V * 6e4, 3)} L/min</td></tr>
+          <tr><td>압력강하 Δp</td><td class="n">${fmt(rX.dp / 1e3, 2)} kPa</td><td>펌프 동력</td><td class="n">${fmt(rX.W, 4)} W</td></tr>
+          <tr><td>출구온도 T${sb('out')}</td><td class="n">${fmt(rX.Tout, 1)} °C</td><td>최고온도 T${sb('j,max')}</td><td class="n">${fmt(rX.Tj, 1)} °C</td></tr>
+        </tbody></table></div>
+        <p class="note">인버터 전체는 칩 수와 배치에 맞춰 병렬 경로는 유량을 더하고, 직렬 칩은 앞 칩의 출구온도를 다음 칩의 입구온도로 써서 계산합니다.</p></div>`;
+    document.querySelectorAll('#v-adev [data-jump]').forEach(bt => bt.addEventListener('click', () => { const el = document.getElementById(bt.dataset.jump); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }));
+    document.querySelectorAll('#v-adev [data-ad]').forEach(bt => bt.addEventListener('click', () => { adSel = bt.dataset.ad; renderAdev(); }));
+  }
+
+  // ---------------- 실행 ----------------
+  function renderView(k) {
+    try {
+      ({ adev: renderAdev, pdf: renderPdf, verify: renderVerify, paper: renderPaper, path: renderPath, fluid: renderFluid, geo: renderGeo, cmp: renderCmp, score: renderScore, sel: renderSel, sweep: renderSweep, notes: renderNotes })[k]();
+    } catch (e) { $('#v-' + k).innerHTML = `<div class="card"><b>계산 오류:</b> ${esc(e.message)}. 입력값(0이나 음수, 필라가 피치보다 큰 경우 등)을 확인하세요.</div>`; console.error(e); }
+  }
+  function recalc() {
+    try { compute(); renderSummary(); renderView(active); }
+    catch (e) { $('#summary').innerHTML = `<span class="chip" style="color:var(--bad)">입력 오류: ${esc(e.message)}</span>`; console.error(e); }
+  }
+  let tmr;
+  buildInputs();
+  buildTabs();
+  $('#inputs').addEventListener('input', () => { clearTimeout(tmr); tmr = setTimeout(recalc, 250); });
+  $('#inputs').addEventListener('change', () => { clearTimeout(tmr); tmr = setTimeout(recalc, 50); });
+  compute(); renderSummary();
+  setTab((location.hash || '').slice(1) || 'adev');
+  window.addEventListener('hashchange', () => setTab(location.hash.slice(1)));
+})();
+
+</script>
+</body>
+</html>
